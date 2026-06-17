@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品管理</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Microsoft YaHei',sans-serif;background:#f5f6fa}
+.header{background:#2c3e50;color:white;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
+.header h2{font-size:18px}
+.header .nav a{color:#bdc3c7;text-decoration:none;margin-left:20px;font-size:14px}
+.header .nav a:hover,.header .nav a.active{color:white}
+.header .user{font-size:13px;color:#bdc3c7}
+.content{padding:20px;max-width:1200px;margin:0 auto}
+.toolbar{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.toolbar input,.toolbar select{padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.toolbar input{width:200px}.toolbar select{width:150px}
+.btn{padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;transition:0.3s}
+.btn-primary{background:#3498db;color:white}.btn-primary:hover{background:#2980b9}
+.btn-success{background:#27ae60;color:white}.btn-success:hover{background:#219a52}
+.btn-danger{background:#e74c3c;color:white}.btn-danger:hover{background:#c0392b}
+.btn-warning{background:#f39c12;color:white}
+.btn-sm{padding:4px 12px;font-size:12px}
+table{width:100%;border-collapse:collapse;background:white;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)}
+th{background:#f8f9fa;padding:12px;text-align:left;font-size:13px;color:#666;border-bottom:2px solid #eee}
+td{padding:10px 12px;font-size:13px;border-bottom:1px solid #f0f0f0}
+tr:hover{background:#f8f9ff}
+.pagination{margin-top:16px;display:flex;justify-content:center;gap:8px}
+.pagination button{padding:6px 14px;border:1px solid #ddd;background:white;border-radius:4px;cursor:pointer}
+.pagination button.active{background:#3498db;color:white;border-color:#3498db}
+.pagination button:disabled{opacity:0.5;cursor:not-allowed}
+.modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center}
+.modal.show{display:flex}
+.modal-box{background:white;border-radius:12px;padding:24px;width:480px;max-height:80vh;overflow-y:auto}
+.modal-box h3{margin-bottom:16px;color:#333}
+.modal-box .form-group{margin-bottom:14px}
+.modal-box label{display:block;font-size:13px;color:#666;margin-bottom:4px}
+.modal-box input,.modal-box select{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px}
+.modal-box .btn-row{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.msg{padding:10px;border-radius:6px;margin-bottom:12px;display:none}
+.msg.success{background:#d4edda;color:#155724;display:block}
+.msg.error{background:#f8d7da;color:#721c24;display:block}
+</style>
+</head>
+<body>
+<div class="header">
+<h2>🛒 超市前台销售系统</h2>
+<div class="nav">
+<a href="index.html">首页</a>
+<a href="product.html" class="active">商品管理</a>
+<a href="cashier.html">收银台</a>
+<a href="records.html">销售记录</a>
+</div>
+<div class="user" id="userInfo"></div>
+</div>
+<div class="content">
+<div id="msgBox" class="msg"></div>
+<div class="toolbar">
+<input type="text" id="keyword" placeholder="搜索商品名称/条形码">
+<select id="filterCategory"><option value="0">全部分类</option></select>
+<button class="btn btn-primary" onclick="search()">搜索</button>
+<button class="btn btn-success" onclick="showAddModal()">+ 新增商品</button>
+<button class="btn btn-warning" onclick="showCategoryModal()">分类管理</button>
+</div>
+<table>
+<thead><tr><th>ID</th><th>商品名称</th><th>分类</th><th>单价(元)</th><th>库存</th><th>单位</th><th>条形码</th><th>状态</th><th>操作</th></tr></thead>
+<tbody id="tableBody"></tbody>
+</table>
+<div class="pagination" id="pagination"></div>
+</div>
+<!-- 商品编辑弹窗 -->
+<div class="modal" id="productModal"><div class="modal-box">
+<h3 id="modalTitle">新增商品</h3>
+<input type="hidden" id="editId">
+<div class="form-group"><label>商品名称</label><input type="text" id="editName"></div>
+<div class="form-group"><label>分类</label><select id="editCategory"></select></div>
+<div class="form-group"><label>单价(元)</label><input type="number" id="editPrice" step="0.01"></div>
+<div class="form-group"><label>库存数量</label><input type="number" id="editStock"></div>
+<div class="form-group"><label>单位</label><input type="text" id="editUnit" placeholder="个/箱/瓶/袋"></div>
+<div class="form-group"><label>条形码</label><input type="text" id="editBarcode"></div>
+<div class="form-group"><label>状态</label><select id="editStatus"><option value="1">上架</option><option value="0">下架</option></select></div>
+<div class="btn-row">
+<button class="btn" onclick="closeModal()" style="background:#999;color:white">取消</button>
+<button class="btn btn-primary" onclick="saveProduct()">保存</button>
+</div>
+</div></div>
+<!-- 分类管理弹窗 -->
+<div class="modal" id="categoryModal"><div class="modal-box">
+<h3>分类管理</h3>
+<div style="margin-bottom:12px;display:flex;gap:8px">
+<input type="text" id="newCategoryName" placeholder="分类名称" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px">
+<button class="btn btn-success" onclick="addCategory()">添加</button>
+</div>
+<table><thead><tr><th>ID</th><th>分类名称</th><th>操作</th></tr></thead><tbody id="catTableBody"></tbody></table>
+<div class="btn-row"><button class="btn" onclick="closeCategoryModal()" style="background:#999;color:white">关闭</button></div>
+</div></div>
+<script src="common.js"></script>
+<script>
+var currentUser=null,currentPage=1,pageSize=10;
+function init(){var u=localStorage.getItem('loginUser');if(!u){window.location.href='/login.html';return}currentUser=JSON.parse(u);document.getElementById('userInfo').textContent=currentUser.realName+(currentUser.roleType==1?' (管理员)':' (收银员)');loadCategories();search()}
+function showMsg(msg,isError){var el=document.getElementById('msgBox');el.className='msg '+(isError?'error':'success');el.textContent=msg;setTimeout(function(){el.className='msg'},3000)}
+function loadCategories(){ajax_get('/api/category/list',function(resp){if(resp.code===200){var sel=document.getElementById('filterCategory');resp.data.forEach(function(c){sel.innerHTML+='<option value="'+c.categoryId+'">'+c.categoryName+'</option>'})}})}
+function search(){var kw=document.getElementById('keyword').value.trim();var cid=document.getElementById('filterCategory').value;ajax_get('/api/product/page?keyword='+encodeURIComponent(kw)+'&categoryId='+cid+'&page='+currentPage+'&limit='+pageSize,function(resp){if(resp.code===200){renderTable(resp.data.list);renderPagination(resp.data.total)}})}
+function renderTable(list){var html='';if(!list||list.length===0){html='<tr><td colspan="9" style="text-align:center;padding:40px;color:#999">暂无数据</td></tr>'}else{list.forEach(function(p){html+='<tr>';html+='<td>'+p.productId+'</td>';html+='<td>'+p.productName+'</td>';html+='<td>'+p.categoryName+'</td>';html+='<td>&yen;'+p.price+'</td>';html+='<td>'+p.stock+'</td>';html+='<td>'+p.unit+'</td>';html+='<td>'+p.barcode+'</td>';html+='<td>'+(p.status==1?'<span style="color:#27ae60">上架</span>':'<span style="color:#e74c3c">下架</span>')+'</td>';html+='<td><button class="btn btn-primary btn-sm" onclick="editProduct('+p.productId+')">编辑</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct('+p.productId+')">删除</button></td>';html+='</tr>'})}document.getElementById('tableBody').innerHTML=html}
+function renderPagination(total){var totalPages=Math.ceil(total/pageSize);var html='<button '+(currentPage<=1?'disabled':'')+' onclick="goPage('+(currentPage-1)+')">上一页</button>';html+='<span style="line-height:32px;margin:0 10px;font-size:13px">第 '+currentPage+'/'+totalPages+' 页 (共'+total+'条)</span>';html+='<button '+(currentPage>=totalPages?'disabled':'')+' onclick="goPage('+(currentPage+1)+')">下一页</button>';document.getElementById('pagination').innerHTML=html}
+function goPage(p){currentPage=p;search()}
+function showAddModal(){document.getElementById('modalTitle').textContent='新增商品';document.getElementById('editId').value='';document.getElementById('editName').value='';document.getElementById('editPrice').value='';document.getElementById('editStock').value='';document.getElementById('editUnit').value='';document.getElementById('editBarcode').value='';document.getElementById('editStatus').value='1';loadCategoryOptions(function(){document.getElementById('productModal').classList.add('show')})}
+function editProduct(id){document.getElementById('modalTitle').textContent='编辑商品';ajax_get('/api/product/'+id,function(resp){if(resp.code===200){var p=resp.data;document.getElementById('editId').value=p.productId;document.getElementById('editName').value=p.productName;document.getElementById('editPrice').value=p.price;document.getElementById('editStock').value=p.stock;document.getElementById('editUnit').value=p.unit||'';document.getElementById('editBarcode').value=p.barcode||'';document.getElementById('editStatus').value=p.status;loadCategoryOptions(function(){document.getElementById('editCategory').value=p.categoryId;document.getElementById('productModal').classList.add('show')})}})}
+function loadCategoryOptions(cb){ajax_get('/api/category/list',function(resp){if(resp.code===200){var html='';resp.data.forEach(function(c){html+='<option value="'+c.categoryId+'">'+c.categoryName+'</option>'});document.getElementById('editCategory').innerHTML=html;if(cb)cb()}})}
+function saveProduct(){var id=document.getElementById('editId').value;var data={productName:document.getElementById('editName').value.trim(),categoryId:parseInt(document.getElementById('editCategory').value),price:parseFloat(document.getElementById('editPrice').value),stock:parseInt(document.getElementById('editStock').value),unit:document.getElementById('editUnit').value.trim(),barcode:document.getElementById('editBarcode').value.trim(),status:parseInt(document.getElementById('editStatus').value)};if(id)data.productId=parseInt(id);if(!data.productName||!data.price||isNaN(data.stock)){showMsg('请填写完整信息',true);return}var url=id?'/api/product/update':'/api/product/add';ajax_post(url,data,function(resp){if(resp.code===200){showMsg(resp.msg);closeModal();search()}else showMsg(resp.msg,true)})}
+function closeModal(){document.getElementById('productModal').classList.remove('show')}
+function deleteProduct(id){if(!confirm('确定删除该商品吗？'))return;ajax_post('/api/product/delete/'+id,null,function(resp){showMsg(resp.msg,resp.code!==200);if(resp.code===200)search()})}
+function showCategoryModal(){loadCategoryTable();document.getElementById('categoryModal').classList.add('show')}
+function closeCategoryModal(){document.getElementById('categoryModal').classList.remove('show')}
+function addCategory(){var name=document.getElementById('newCategoryName').value.trim();if(!name){showMsg('请输入分类名称',true);return}ajax_post('/api/category/add',{categoryName:name},function(resp){if(resp.code===200){document.getElementById('newCategoryName').value='';loadCategoryTable();loadCategories()}showMsg(resp.msg,resp.code!==200)})}
+function loadCategoryTable(){ajax_get('/api/category/list',function(resp){if(resp.code===200){var html='';resp.data.forEach(function(c){html+='<tr><td>'+c.categoryId+'</td><td>'+c.categoryName+'</td><td><button class="btn btn-danger btn-sm" onclick="delCategory('+c.categoryId+')">删除</button></td></tr>'});document.getElementById('catTableBody').innerHTML=html||'<tr><td colspan="3" style="text-align:center;color:#999">暂无分类</td></tr>'}})}
+function delCategory(id){if(!confirm('确定删除该分类吗？'))return;ajax_post('/api/category/delete/'+id,null,function(resp){showMsg(resp.msg,resp.code!==200);if(resp.code===200){loadCategoryTable();loadCategories()}})}
+init();
+</script>
+</body>
+</html>

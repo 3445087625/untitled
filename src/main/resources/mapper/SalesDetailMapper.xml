@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.supermarket.mapper.SalesDetailMapper">
+
+    <resultMap id="BaseResultMap" type="com.supermarket.entity.SalesDetail">
+        <id column="detail_id" property="detailId"/>
+        <result column="order_id" property="orderId"/>
+        <result column="product_id" property="productId"/>
+        <result column="price" property="price"/>
+        <result column="quantity" property="quantity"/>
+        <result column="subtotal" property="subtotal"/>
+        <result column="product_name" property="productName"/>
+        <result column="unit" property="unit"/>
+    </resultMap>
+
+    <!-- 批量插入明细 -->
+    <insert id="batchInsert" parameterType="list">
+        INSERT INTO sales_detail(order_id, product_id, price, quantity, subtotal)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.orderId}, #{item.productId}, #{item.price},
+             #{item.quantity}, #{item.subtotal})
+        </foreach>
+    </insert>
+
+    <!-- 根据订单ID查询明细（关联商品名） -->
+    <select id="selectByOrderId" resultMap="BaseResultMap">
+        SELECT d.*, p.product_name, p.unit
+        FROM sales_detail d
+        LEFT JOIN product p ON d.product_id = p.product_id
+        WHERE d.order_id = #{orderId}
+    </select>
+
+</mapper>

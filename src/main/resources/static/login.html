@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>超市前台销售系统 - 登录</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh; display: flex; align-items: center; justify-content: center;
+        }
+        .container {
+            background: white; border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 420px; padding: 40px;
+        }
+        .title {
+            text-align: center; font-size: 24px; font-weight: bold; color: #333; margin-bottom: 8px;
+        }
+        .subtitle { text-align: center; color: #999; font-size: 14px; margin-bottom: 30px; }
+        .tabs {
+            display: flex; margin-bottom: 24px; border-bottom: 2px solid #eee;
+        }
+        .tab {
+            flex: 1; text-align: center; padding: 10px; cursor: pointer;
+            color: #999; font-size: 16px; transition: 0.3s;
+        }
+        .tab.active { color: #667eea; border-bottom: 2px solid #667eea; margin-bottom: -2px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 14px; color: #666; margin-bottom: 6px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 8px;
+            font-size: 14px; outline: none; transition: 0.3s;
+        }
+        .form-group input:focus { border-color: #667eea; }
+        .btn {
+            width: 100%; padding: 12px; background: #667eea; color: white; border: none;
+            border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s;
+        }
+        .btn:hover { background: #5a6fd6; }
+        .form-panel { display: none; }
+        .form-panel.active { display: block; }
+        .msg { text-align: center; margin-top: 10px; font-size: 13px; min-height: 20px; }
+        .msg.error { color: #f44336; }
+        .msg.success { color: #4caf50; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="title">🛒 超市前台销售系统</div>
+    <div class="subtitle">数据库原理课程设计</div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('login')">登录</div>
+        <div class="tab" onclick="switchTab('register')">注册</div>
+    </div>
+
+    <!-- 登录表单 -->
+    <div id="loginPanel" class="form-panel active">
+        <div class="form-group">
+            <label>用户名</label>
+            <input type="text" id="loginUsername" placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="loginPassword" placeholder="请输入密码" onkeydown="if(event.key==='Enter')login()">
+        </div>
+        <button class="btn" onclick="login()">登 录</button>
+        <div id="loginMsg" class="msg"></div>
+    </div>
+
+    <!-- 注册表单 -->
+    <div id="registerPanel" class="form-panel">
+        <div class="form-group">
+            <label>用户名</label>
+            <input type="text" id="regUsername" placeholder="请输入用户名">
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="regPassword" placeholder="请输入密码">
+        </div>
+        <div class="form-group">
+            <label>真实姓名</label>
+            <input type="text" id="regRealName" placeholder="请输入真实姓名">
+        </div>
+        <div class="form-group">
+            <label>角色</label>
+            <select id="regRoleType">
+                <option value="2">收银员</option>
+                <option value="1">管理员</option>
+            </select>
+        </div>
+        <button class="btn" onclick="register()">注 册</button>
+        <div id="regMsg" class="msg"></div>
+    </div>
+</div>
+
+<script>
+function switchTab(type) {
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', (type==='login'&&i===0)||(type==='register'&&i===1)));
+    document.getElementById('loginPanel').classList.toggle('active', type==='login');
+    document.getElementById('registerPanel').classList.toggle('active', type==='register');
+    document.getElementById('loginMsg').textContent = '';
+    document.getElementById('regMsg').textContent = '';
+}
+
+function ajax(method, url, data, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open(method, url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            var resp = JSON.parse(xhr.responseText);
+            callback(resp);
+        }
+    };
+    xhr.send(data ? JSON.stringify(data) : null);
+}
+
+function login() {
+    var username = document.getElementById('loginUsername').value.trim();
+    var password = document.getElementById('loginPassword').value.trim();
+    var msgEl = document.getElementById('loginMsg');
+    if (!username || !password) { msgEl.className='msg error'; msgEl.textContent='请输入用户名和密码'; return; }
+
+    ajax('POST', '/api/user/login', {username:username, password:password}, function(resp) {
+        if (resp.code === 200) {
+            msgEl.className = 'msg success';
+            msgEl.textContent = '登录成功，正在跳转...';
+            localStorage.setItem('loginUser', JSON.stringify(resp.data));
+            setTimeout(function() { window.location.href = '/index.html'; }, 500);
+        } else {
+            msgEl.className = 'msg error';
+            msgEl.textContent = resp.msg;
+        }
+    });
+}
+
+function register() {
+    var username = document.getElementById('regUsername').value.trim();
+    var password = document.getElementById('regPassword').value.trim();
+    var realName = document.getElementById('regRealName').value.trim();
+    var roleType = document.getElementById('regRoleType').value;
+    var msgEl = document.getElementById('regMsg');
+    if (!username || !password || !realName) { msgEl.className='msg error'; msgEl.textContent='请填写完整信息'; return; }
+
+    ajax('POST', '/api/user/register', {
+        username: username, password: password,
+        realName: realName, roleType: parseInt(roleType), status: 1
+    }, function(resp) {
+        if (resp.code === 200) {
+            msgEl.className = 'msg success';
+            msgEl.textContent = '注册成功，请登录';
+            setTimeout(function() { switchTab('login'); }, 800);
+        } else {
+            msgEl.className = 'msg error';
+            msgEl.textContent = resp.msg;
+        }
+    });
+}
+</script>
+</body>
+</html>

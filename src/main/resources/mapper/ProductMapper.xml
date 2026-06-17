@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.supermarket.mapper.ProductMapper">
+
+    <resultMap id="BaseResultMap" type="com.supermarket.entity.Product">
+        <id column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="price" property="price"/>
+        <result column="stock" property="stock"/>
+        <result column="unit" property="unit"/>
+        <result column="barcode" property="barcode"/>
+        <result column="image_url" property="imageUrl"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="category_name" property="categoryName"/>
+    </resultMap>
+
+    <!-- 分页查询商品（关联分类名称） -->
+    <select id="selectPage" resultMap="BaseResultMap">
+        SELECT p.*, c.category_name
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.category_id
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (p.product_name LIKE CONCAT('%', #{keyword}, '%')
+                     OR p.barcode LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="categoryId != null and categoryId != 0">
+                AND p.category_id = #{categoryId}
+            </if>
+        </where>
+        ORDER BY p.product_id DESC
+        LIMIT #{offset}, #{limit}
+    </select>
+
+    <!-- 统计总数 -->
+    <select id="count" resultType="int">
+        SELECT COUNT(*) FROM product p
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (p.product_name LIKE CONCAT('%', #{keyword}, '%')
+                     OR p.barcode LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="categoryId != null and categoryId != 0">
+                AND p.category_id = #{categoryId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT p.*, c.category_name
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.category_id
+        WHERE p.product_id = #{productId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="productId" parameterType="com.supermarket.entity.Product">
+        INSERT INTO product(product_name, category_id, price, stock, unit, barcode, image_url, status)
+        VALUES(#{productName}, #{categoryId}, #{price}, #{stock}, #{unit}, #{barcode}, #{imageUrl}, #{status})
+    </insert>
+
+    <update id="update" parameterType="com.supermarket.entity.Product">
+        UPDATE product
+        SET product_name = #{productName}, category_id = #{categoryId},
+            price = #{price}, stock = #{stock}, unit = #{unit},
+            barcode = #{barcode}, image_url = #{imageUrl}, status = #{status}
+        WHERE product_id = #{productId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM product WHERE product_id = #{productId}
+    </delete>
+
+    <!-- 扣减库存 -->
+    <update id="updateStock">
+        UPDATE product SET stock = stock + #{quantity} WHERE product_id = #{productId}
+    </update>
+
+    <!-- 查询上架商品（收银用） -->
+    <select id="selectOnSale" resultMap="BaseResultMap">
+        SELECT p.*, c.category_name
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.category_id
+        WHERE p.status = 1
+        <if test="keyword != null and keyword != ''">
+            AND (p.product_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR p.barcode LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY p.product_id
+    </select>
+
+</mapper>

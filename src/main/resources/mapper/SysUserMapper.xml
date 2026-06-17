@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.supermarket.mapper.SysUserMapper">
+
+    <resultMap id="BaseResultMap" type="com.supermarket.entity.SysUser">
+        <id column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="real_name" property="realName"/>
+        <result column="role_type" property="roleType"/>
+        <result column="phone" property="phone"/>
+        <result column="create_time" property="createTime"/>
+        <result column="status" property="status"/>
+    </resultMap>
+
+    <select id="selectByUsernameAndPassword" resultMap="BaseResultMap">
+        SELECT * FROM sys_user
+        WHERE username = #{username} AND password = #{password} AND status = 1
+    </select>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT * FROM sys_user WHERE username = #{username}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="userId" parameterType="com.supermarket.entity.SysUser">
+        INSERT INTO sys_user(username, password, real_name, role_type, phone, status)
+        VALUES(#{username}, #{password}, #{realName}, #{roleType}, #{phone}, #{status})
+    </insert>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM sys_user WHERE user_id = #{userId}
+    </select>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM sys_user WHERE role_type = 2 AND status = 1
+    </select>
+
+    <update id="updatePassword">
+        UPDATE sys_user SET password = #{password} WHERE user_id = #{userId}
+    </update>
+
+    <update id="updateStatus">
+        UPDATE sys_user SET status = #{status} WHERE user_id = #{userId}
+    </update>
+
+</mapper>

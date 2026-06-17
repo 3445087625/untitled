@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.supermarket.mapper.CategoryMapper">
+
+    <resultMap id="BaseResultMap" type="com.supermarket.entity.Category">
+        <id column="category_id" property="categoryId"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="description" property="description"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT * FROM category ORDER BY category_id
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM category WHERE category_id = #{categoryId}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="categoryId" parameterType="com.supermarket.entity.Category">
+        INSERT INTO category(category_name, description) VALUES(#{categoryName}, #{description})
+    </insert>
+
+    <update id="update" parameterType="com.supermarket.entity.Category">
+        UPDATE category
+        SET category_name = #{categoryName}, description = #{description}
+        WHERE category_id = #{categoryId}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM category WHERE category_id = #{categoryId}
+    </delete>
+
+</mapper>

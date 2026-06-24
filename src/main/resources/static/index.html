@@ -16,6 +16,7 @@
         .card .card-icon.orange { background: #fff7ed; color: #ea580c; }
         .card .card-info h3 { font-size: 13px; color: #999; margin-bottom: 6px; font-weight: normal; }
         .card .card-info .card-num { font-size: 28px; font-weight: 700; color: #333; }
+        .order-table tbody tr { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -75,7 +76,7 @@ function loadRecentOrders() {
             r.data.list.forEach(function(o) {
                 var pm = o.paymentMethod===1?'现金':o.paymentMethod===2?'微信':'支付宝';
                 var pc = o.paymentMethod===1?'pay-cash':o.paymentMethod===2?'pay-wechat':'pay-alipay';
-                html += '<tr><td class="td-oid">'+o.orderNo+'</td><td>'+(o.realName||'--')+'</td><td class="td-center">¥'+parseFloat(o.totalAmount||0).toFixed(2)+'</td><td class="td-center">¥'+parseFloat(o.paidAmount||0).toFixed(2)+'</td><td><span class="pay-badge '+pc+'">'+pm+'</span></td><td class="td-time">'+fmtTime(o.createTime)+'</td><td><span class="status-badge '+(o.orderStatus===1?'status-done':'status-refund')+'">'+(o.orderStatus===1?'已完成':'已退货')+'</span></td></tr>';
+                html += '<tr onclick="window.location.href=\'/order-detail.html?id='+o.orderId+'\'" style="cursor:pointer"><td class="td-oid">'+o.orderNo+'</td><td>'+(o.realName||'--')+'</td><td class="td-center">¥'+parseFloat(o.totalAmount||0).toFixed(2)+'</td><td class="td-center">¥'+parseFloat(o.paidAmount||0).toFixed(2)+'</td><td><span class="pay-badge '+pc+'">'+pm+'</span></td><td class="td-time">'+fmtTime(o.createTime)+'</td><td><span class="status-badge '+(o.orderStatus===1?'status-done':'status-refund')+'">'+(o.orderStatus===1?'已完成':'已退货')+'</span></td></tr>';
             });
             html += '</tbody></table>';
         } else { html = '<div class="empty-state">📭 暂无销售记录</div>'; }

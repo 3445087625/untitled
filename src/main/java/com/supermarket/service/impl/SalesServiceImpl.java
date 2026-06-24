@@ -85,16 +85,28 @@ public class SalesServiceImpl implements SalesService {
             order.setDiscountAmount(BigDecimal.ZERO);
         }
 
-        // 3. 保存订单
+        // 3. 计算找零（现金支付且实收 > 应收时）
+        if (order.getPaymentMethod() != null && order.getPaymentMethod() == 1) {
+            BigDecimal receivable = total.subtract(order.getDiscountAmount());
+            if (order.getPaidAmount() != null && order.getPaidAmount().compareTo(receivable) > 0) {
+                order.setChangeAmount(order.getPaidAmount().subtract(receivable));
+            } else {
+                order.setChangeAmount(BigDecimal.ZERO);
+            }
+        } else {
+            order.setChangeAmount(BigDecimal.ZERO);
+        }
+
+        // 4. 保存订单
         salesOrderMapper.insert(order);
 
-        // 4. 保存明细
+        // 5. 保存明细
         for (SalesDetail detail : details) {
             detail.setOrderId(order.getOrderId());
         }
         salesDetailMapper.batchInsert(details);
 
-        // 5. 扣减库存
+        // 6. 扣减库存
         for (SalesDetail detail : details) {
             productMapper.updateStock(detail.getProductId(), -detail.getQuantity());
         }

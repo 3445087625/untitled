@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>订单详情 - 超市前台销售系统</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        .detail-container { max-width: 900px; margin: 0 auto; }
+        .detail-card { background: white; border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .detail-card .card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #f2f3f6; }
+        .detail-card .card-head h2 { font-size: 18px; color: #333; }
+        .detail-info { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 40px; }
+        .detail-info .info-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .detail-info .info-item .info-label { font-size: 13px; color: #999; }
+        .detail-info .info-item .info-value { font-size: 14px; color: #333; font-weight: 500; }
+        .detail-info .info-item .info-value.oid { font-family: 'Consolas','Courier New',monospace; color: #667eea; }
+        .detail-info .info-item .info-value.price { color: #e74c3c; font-weight: 600; }
+        .amount-card { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .amount-card h3 { font-size: 15px; color: #666; margin-bottom: 16px; font-weight: 600; }
+        .amount-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; }
+        .amount-grid .amount-item { text-align: center; padding: 8px 4px; }
+        .amount-grid .amount-item .amount-label { font-size: 12px; color: #999; margin-bottom: 6px; }
+        .amount-grid .amount-item .amount-value { font-size: 20px; font-weight: 700; color: #333; font-variant-numeric: tabular-nums; }
+        .amount-grid .amount-item .amount-value.red { color: #e74c3c; }
+        .amount-grid .amount-item .amount-value.green { color: #27ae60; }
+        .amount-grid .amount-item .amount-value.orange { color: #e67e22; }
+        .detail-table { width: 100%; border-collapse: separate; border-spacing: 0; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.04); }
+        .detail-table thead { background: linear-gradient(180deg, #f8f9fc 0%, #f1f3f8 100%); }
+        .detail-table th { padding: 13px 16px; text-align: left; font-size: 12px; color: #7f8c9b; font-weight: 600; border-bottom: 2px solid #e8ecf1; }
+        .detail-table th.th-right { text-align: right; }
+        .detail-table td { padding: 14px 16px; font-size: 13px; color: #444; border-bottom: 1px solid #f2f3f6; }
+        .detail-table .td-right { text-align: right; font-variant-numeric: tabular-nums; }
+        .detail-table .td-price { text-align: right; color: #e74c3c; font-weight: 500; font-variant-numeric: tabular-nums; }
+        .detail-summary { display: flex; justify-content: flex-end; padding: 14px 16px; background: #fafbfc; font-size: 14px; font-weight: 600; color: #333; }
+        .detail-summary .sum-total { color: #e74c3c; font-size: 16px; margin-left: 8px; font-variant-numeric: tabular-nums; }
+        .back-link { display: inline-block; margin-bottom: 16px; color: #667eea; text-decoration: none; font-size: 13px; }
+        .back-link:hover { text-decoration: underline; }
+        .empty-state { text-align: center; padding: 50px 20px; color: #bbb; font-size: 14px; }
+    </style>
+</head>
+<body>
+<header class="header">
+    <div class="header-left"><span class="logo">🛒 超市前台销售系统</span></div>
+    <div class="header-right"><span class="header-user" id="userName">--</span><button class="logout-btn" onclick="logout()">退出</button></div>
+</header>
+
+<nav class="nav">
+    <a href="index.html" class="nav-link" onclick="event.preventDefault();navigateTo('/index.html')">📊 首页概览</a>
+    <a href="product.html" class="nav-link" onclick="event.preventDefault();navigateTo('/product.html')">📦 商品管理</a>
+    <a href="cashier.html" class="nav-link" onclick="event.preventDefault();navigateTo('/cashier.html')">💰 收银台</a>
+    <a href="records.html" class="nav-link" onclick="event.preventDefault();navigateTo('/records.html')">📋 销售记录</a>
+</nav>
+
+<div class="content fade-in">
+    <div class="detail-container">
+        <a href="javascript:history.back()" class="back-link">← 返回</a>
+        <div id="detailContent"></div>
+    </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+var user = checkLogin();
+if (!user) { /* checkLogin already redirects */ }
+document.getElementById('userName').textContent = (user.realName || user.username) + (user.roleType === 1 ? ' (管理员)' : ' (收银员)');
+
+function logout() {
+    ajax_post('/api/user/logout', null, function() { localStorage.removeItem('loginUser'); window.location.href = '/login.html'; });
+}
+
+function getQueryParam(name) {
+    var m = location.search.match(new RegExp('[?&]' + name + '=([^&]*)'));
+    return m ? decodeURIComponent(m[1]) : null;
+}
+
+function renderDetail() {
+    var orderId = getQueryParam('id');
+    if (!orderId) {
+        document.getElementById('detailContent').innerHTML = '<div class="empty-state">缺少订单ID参数</div>';
+        return;
+    }
+    ajax_get('/api/sales/detail/' + orderId, function(resp) {
+        if (resp.code !== 200 || !resp.data || !resp.data.order) {
+            document.getElementById('detailContent').innerHTML = '<div class="empty-state">订单不存在或已被删除</div>';
+            return;
+        }
+        var o = resp.data.order;
+        var details = resp.data.details || [];
+        var paymentNames = {1: '💵 现金', 2: '💚 微信', 3: '💙 支付宝'};
+        var statusNames = {1: '已完成', 2: '已退货'};
+        var payBadge = o.paymentMethod === 1 ? 'pay-cash' : o.paymentMethod === 2 ? 'pay-wechat' : 'pay-alipay';
+        var statusBadge = o.orderStatus === 1 ? 'status-done' : 'status-refund';
+        var receivable = (parseFloat(o.totalAmount) || 0) - (parseFloat(o.discountAmount) || 0);
+
+        var html = '';
+
+        // 订单信息卡片
+        html += '<div class="detail-card">';
+        html += '<div class="card-head"><h2>📋 订单信息</h2><span class="status-badge ' + statusBadge + '">' + (statusNames[o.orderStatus] || '--') + '</span></div>';
+        html += '<div class="detail-info">';
+        html += '<div class="info-item"><span class="info-label">订单编号</span><span class="info-value oid">' + (o.orderNo || '--') + '</span></div>';
+        html += '<div class="info-item"><span class="info-label">下单时间</span><span class="info-value">' + fmtTime(o.createTime) + '</span></div>';
+        html += '<div class="info-item"><span class="info-label">收银员</span><span class="info-value">' + (o.realName || '--') + '</span></div>';
+        html += '<div class="info-item"><span class="info-label">支付方式</span><span class="info-value"><span class="pay-badge ' + payBadge + '">' + (paymentNames[o.paymentMethod] || '--') + '</span></span></div>';
+        if (o.remark) {
+            html += '<div class="info-item"><span class="info-label">备注</span><span class="info-value">' + o.remark + '</span></div>';
+        }
+        html += '</div></div>';
+
+        // 金额卡片
+        html += '<div class="amount-card">';
+        html += '<h3>💰 金额明细</h3>';
+        html += '<div class="amount-grid">';
+        html += '<div class="amount-item"><div class="amount-label">商品金额</div><div class="amount-value">¥' + fmtMoney(o.totalAmount) + '</div></div>';
+        html += '<div class="amount-item"><div class="amount-label">折扣</div><div class="amount-value green">¥' + fmtMoney(o.discountAmount) + '</div></div>';
+        html += '<div class="amount-item"><div class="amount-label">应收</div><div class="amount-value red">¥' + fmtMoney(receivable) + '</div></div>';
+        html += '<div class="amount-item"><div class="amount-label">实收</div><div class="amount-value">¥' + fmtMoney(o.paidAmount) + '</div></div>';
+
+        // 现金收款找零 — 作为金额明细的第五项（前端计算，兼容新老订单）
+        if (o.paymentMethod === 1) {
+            var change = (parseFloat(o.paidAmount) || 0) - receivable;
+            if (change > 0.005) {
+                html += '<div class="amount-item"><div class="amount-label">找零</div><div class="amount-value orange">¥' + fmtMoney(change) + '</div></div>';
+            }
+        }
+        html += '</div></div>';
+
+        // 明细表格
+        html += '<h3 style="font-size:15px;color:#666;margin-bottom:12px;font-weight:600;">📝 商品明细</h3>';
+        html += '<table class="detail-table"><thead><tr>';
+        html += '<th>#</th><th>商品名称</th><th>单位</th><th class="th-right">单价</th><th class="th-right">数量</th><th class="th-right">小计</th>';
+        html += '</tr></thead><tbody>';
+
+        var totalQty = 0;
+        for (var i = 0; i < details.length; i++) {
+            var d = details[i];
+            totalQty += d.quantity;
+            html += '<tr>';
+            html += '<td>' + (i + 1) + '</td>';
+            html += '<td>' + (d.productName || '--') + '</td>';
+            html += '<td>' + (d.unit || '个') + '</td>';
+            html += '<td class="td-price">¥' + fmtMoney(d.price) + '</td>';
+            html += '<td class="td-right">' + d.quantity + '</td>';
+            html += '<td class="td-price">¥' + fmtMoney(d.subtotal) + '</td>';
+            html += '</tr>';
+        }
+
+        html += '</tbody></table>';
+        html += '<div class="detail-summary">共 ' + details.length + ' 种商品 / ' + totalQty + ' 件，合计：<span class="sum-total">¥' + fmtMoney(o.totalAmount) + '</span></div>';
+
+        document.getElementById('detailContent').innerHTML = html;
+    });
+}
+
+renderDetail();
+</script>
+</body>
+</html>

@@ -436,6 +436,7 @@ table.data-table {
 .order-table tbody tr:last-child td { border-bottom: none; }
 .order-table .td-oid   { font-family: 'Consolas','Courier New',monospace; font-size: 12px; color: #667eea; font-weight: 500; }
 .order-table .td-money { text-align: right; font-weight: 500; font-variant-numeric: tabular-nums; }
+.order-table th.th-right { text-align: right; }
 .order-table .td-time  { font-size: 12px; color: #888; white-space: nowrap; }
 
 /* Pay Badge */

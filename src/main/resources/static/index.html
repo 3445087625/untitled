@@ -71,7 +71,7 @@ function loadRecentOrders() {
     ajax('GET', '/api/sales/page?page=1&limit=5', null, function(r) {
         var html = '';
         if (r.code===200&&r.data&&r.data.list&&r.data.list.length>0) {
-            html = '<table class="order-table"><thead><tr><th>订单编号</th><th>收银员</th><th>金额</th><th>实收</th><th>支付</th><th>时间</th><th>状态</th></tr></thead><tbody>';
+            html = '<table class="order-table"><thead><tr><th>订单编号</th><th>收银员</th><th class="th-right">金额</th><th class="th-right">实收</th><th>支付</th><th>时间</th><th>状态</th></tr></thead><tbody>';
             r.data.list.forEach(function(o) {
                 var pm = o.paymentMethod===1?'现金':o.paymentMethod===2?'微信':'支付宝';
                 var pc = o.paymentMethod===1?'pay-cash':o.paymentMethod===2?'pay-wechat':'pay-alipay';

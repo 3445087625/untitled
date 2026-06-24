@@ -37,9 +37,9 @@
     .order-table td:last-child { padding-right: 24px; }
     .order-table tbody tr:hover { background: #fafbff; }
     .order-table .order-no { font-family: 'SF Mono', Consolas, monospace; font-size: 12px; color: #667eea; font-weight: 500; }
-    .order-table .amount { font-weight: 600; color: #e74c3c; }
-    .order-table .discount { color: #27ae60; font-weight: 500; }
-    .order-table .paid { font-weight: 600; }
+    .order-table .amount { font-weight: 600; color: #e74c3c; text-align: right; font-variant-numeric: tabular-nums; }
+    .order-table .discount { color: #27ae60; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; }
+    .order-table .paid { font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
     .order-table .payment-badge {
         display: inline-block;
         padding: 3px 10px;
@@ -101,7 +101,7 @@
     </div>
     <div class="table-card">
         <table class="order-table">
-            <thead><tr><th>订单编号</th><th>收银员</th><th>金额</th><th>折扣</th><th>实收</th><th>支付方式</th><th>商品</th><th>时间</th><th>操作</th></tr></thead>
+            <thead><tr><th>订单编号</th><th>收银员</th><th class="th-right">金额</th><th class="th-right">折扣</th><th class="th-right">实收</th><th>支付方式</th><th>商品</th><th>时间</th><th>操作</th></tr></thead>
             <tbody id="tableBody"></tbody>
         </table>
     </div>

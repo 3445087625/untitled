@@ -19,7 +19,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 销售Service实现
+ * 销售Service实现 — 核心业务：订单提交（事务）、查询、退款
+ * <p>
+ * submitOrder 是整个系统最核心的业务方法，使用 @Transactional 保证
+ * "订单保存 → 明细保存 → 库存扣减" 三个操作的原子性。
+ * 订单编号格式：SO + yyyyMMddHHmmss（如 SO20260624143001）。
+ * </p>
  */
 @Service
 public class SalesServiceImpl implements SalesService {
@@ -31,6 +36,21 @@ public class SalesServiceImpl implements SalesService {
     @Autowired
     private ProductMapper productMapper;
 
+    /**
+     * 提交销售订单（事务方法）
+     * <p>
+     * 五步流程：
+     * 1. 生成订单编号 (SO + 时间戳)
+     * 2. 遍历明细，校验商品存在 & 库存充足，计算小计和总金额
+     * 3. 插入 sales_order 主记录
+     * 4. 批量插入 sales_detail 明细
+     * 5. 扣减 product 库存
+     * </p>
+     *
+     * @param order   订单主信息（userId/paymentMethod 需预先设置）
+     * @param details 明细列表（每个元素含 productId/quantity）
+     * @return success=true 时包含 orderId 和 orderNo
+     */
     @Override
     @Transactional  // 事务：保证订单和明细、库存要么全成功，要么全回滚
     public Map<String, Object> submitOrder(SalesOrder order, List<SalesDetail> details) {
@@ -86,6 +106,13 @@ public class SalesServiceImpl implements SalesService {
         return result;
     }
 
+    /**
+     * 订单分页查询（含收银员姓名、商品种类数）
+     *
+     * @param keyword 订单号搜索关键词（可选）
+     * @param page    页码
+     * @param limit   每页条数
+     */
     @Override
     public Map<String, Object> getOrderPage(String keyword, Integer page, Integer limit) {
         Map<String, Object> result = new HashMap<>();

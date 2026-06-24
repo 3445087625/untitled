@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 
 /**
- * 用户Controller - 处理登录/注册/退出请求
+ * 用户 Controller — 处理登录、注册、退出、修改密码
+ * <p>
+ * 登录成功后用户信息存入 HttpSession，后续请求通过 getLoginUser() 校验身份。
+ * </p>
  */
 @RestController
 @RequestMapping("/api/user")
@@ -18,7 +21,9 @@ public class SysUserController {
     @Autowired
     private SysUserService sysUserService;
 
-    /** 登录 */
+    /**
+     * 登录：验证用户名密码，成功后将用户存入 Session
+     */
     @PostMapping("/login")
     public ResultVo<?> login(@RequestBody Map<String, String> params) {
         String username = params.get("username");
@@ -33,7 +38,9 @@ public class SysUserController {
         return ResultVo.error((String) result.get("msg"));
     }
 
-    /** 注册 */
+    /**
+     * 注册：校验用户名唯一性后创建新用户
+     */
     @PostMapping("/register")
     public ResultVo<?> register(@RequestBody SysUser user) {
         if (user.getUsername() == null || user.getPassword() == null) {
@@ -46,7 +53,9 @@ public class SysUserController {
         return ResultVo.error("用户名已存在");
     }
 
-    /** 获取当前登录用户 */
+    /**
+     * 获取当前登录用户（从 Session 读取）
+     */
     @GetMapping("/current")
     public ResultVo<SysUser> current() {
         SysUser user = sysUserService.getLoginUser();
@@ -56,14 +65,18 @@ public class SysUserController {
         return ResultVo.success(user);
     }
 
-    /** 退出 */
+    /**
+     * 退出登录：清除 Session
+     */
     @PostMapping("/logout")
     public ResultVo<?> logout() {
         sysUserService.logout();
         return ResultVo.success("已退出", null);
     }
 
-    /** 修改密码 */
+    /**
+     * 修改密码：需提供原密码验证
+     */
     @PostMapping("/password")
     public ResultVo<?> updatePassword(@RequestBody Map<String, String> params) {
         SysUser user = sysUserService.getLoginUser();

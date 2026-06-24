@@ -27,7 +27,12 @@
               #{paidAmount}, #{changeAmount}, #{paymentMethod}, #{remark})
     </insert>
 
-    <!-- 分页查询订单（联表查收银员姓名） -->
+    <!--
+      分页查询订单（核心多表关联SQL）
+      - LEFT JOIN sys_user：获取收银员姓名（real_name）
+      - 子查询：统计当前订单包含的商品种类数（detail_count）
+      - 动态 SQL：<if> 标签实现按订单号模糊搜索
+    -->
     <select id="selectPage" resultMap="BaseResultMap">
         SELECT o.*, u.real_name,
                (SELECT COUNT(*) FROM sales_detail WHERE order_id = o.order_id) AS detail_count
@@ -51,7 +56,12 @@
         </where>
     </select>
 
-    <!-- 今日销售汇总 -->
+    <!--
+      今日销售汇总
+      - DATE(create_time)=CURDATE()：只统计当天数据
+      - COALESCE：避免无数据时返回 NULL
+      - order_status=1：只统计已完成的订单
+    -->
     <select id="selectTodaySummary" resultType="map">
         SELECT COALESCE(COUNT(*), 0)         AS todayOrderCount,
                COALESCE(SUM(paid_amount), 0) AS todaySalesAmount
@@ -67,7 +77,11 @@
         WHERE o.order_id = #{orderId}
     </select>
 
-    <!-- 查询视图：销售日报 -->
+    <!--
+      查询视图 v_sales_summary（销售日报）
+      视图定义：按天(daily)聚合 order_count、total_sales、total_quantity
+      用于首页展示销售趋势
+    -->
     <select id="selectSalesReport" resultType="map">
         SELECT * FROM v_sales_summary LIMIT 30
     </select>

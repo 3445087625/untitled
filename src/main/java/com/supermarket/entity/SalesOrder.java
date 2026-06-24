@@ -3,7 +3,13 @@ package com.supermarket.entity;
 import java.math.BigDecimal;
 
 /**
- * 销售订单实体
+ * 销售订单实体 — 映射 sales_order 表
+ * <p>
+ * - orderNo: SO+yyyyMMddHHmmss
+ * - paymentMethod: 1=现金 2=微信 3=支付宝
+ * - orderStatus: 1=已完成 2=已退款
+ * - realName/detailCount: 联表填充，不存库
+ * </p>
  */
 public class SalesOrder {
     private Integer orderId;

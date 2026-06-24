@@ -51,11 +51,30 @@
         </where>
     </select>
 
+    <!-- 今日销售汇总 -->
+    <select id="selectTodaySummary" resultType="map">
+        SELECT COALESCE(COUNT(*), 0)         AS todayOrderCount,
+               COALESCE(SUM(paid_amount), 0) AS todaySalesAmount
+        FROM sales_order
+        WHERE DATE(create_time) = CURDATE()
+          AND order_status = 1
+    </select>
+
     <select id="selectById" resultMap="BaseResultMap">
         SELECT o.*, u.real_name
         FROM sales_order o
         LEFT JOIN sys_user u ON o.user_id = u.user_id
         WHERE o.order_id = #{orderId}
     </select>
+
+    <!-- 查询视图：销售日报 -->
+    <select id="selectSalesReport" resultType="map">
+        SELECT * FROM v_sales_summary LIMIT 30
+    </select>
+
+    <!-- 退款：更新订单状态 -->
+    <update id="updateOrderStatus">
+        UPDATE sales_order SET order_status = #{orderStatus} WHERE order_id = #{orderId}
+    </update>
 
 </mapper>

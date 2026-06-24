@@ -10,7 +10,7 @@ import com.supermarket.service.SalesService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -24,11 +24,11 @@ import java.util.Map;
 @Service
 public class SalesServiceImpl implements SalesService {
 
-    @Resource
+    @Autowired
     private SalesOrderMapper salesOrderMapper;
-    @Resource
+    @Autowired
     private SalesDetailMapper salesDetailMapper;
-    @Resource
+    @Autowired
     private ProductMapper productMapper;
 
     @Override
@@ -55,6 +55,7 @@ public class SalesServiceImpl implements SalesService {
                 return result;
             }
             BigDecimal subtotal = p.getPrice().multiply(new BigDecimal(detail.getQuantity()));
+            detail.setProductName(p.getProductName());
             detail.setPrice(p.getPrice());
             detail.setSubtotal(subtotal);
             total = total.add(subtotal);
@@ -102,5 +103,25 @@ public class SalesServiceImpl implements SalesService {
         result.put("order", order);
         result.put("details", details);
         return result;
+    }
+
+    @Override
+    public Map<String, Object> getTodaySummary() {
+        return salesOrderMapper.selectTodaySummary();
+    }
+
+    @Override
+    public List<Map<String, Object>> getSalesReport() {
+        return salesOrderMapper.selectSalesReport();
+    }
+
+    @Override
+    public boolean refund(Integer orderId) {
+        SalesOrder order = salesOrderMapper.selectById(orderId);
+        if (order == null || order.getOrderStatus() != 1) {
+            return false;
+        }
+        salesOrderMapper.updateOrderStatus(orderId, 2);
+        return true;
     }
 }

@@ -5,7 +5,7 @@ import com.supermarket.entity.SysUser;
 import com.supermarket.service.SysUserService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Map;
 
 /**
@@ -15,7 +15,7 @@ import java.util.Map;
 @RequestMapping("/api/user")
 public class SysUserController {
 
-    @Resource
+    @Autowired
     private SysUserService sysUserService;
 
     /** 登录 */

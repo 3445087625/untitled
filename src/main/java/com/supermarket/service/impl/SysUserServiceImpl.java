@@ -3,23 +3,28 @@ package com.supermarket.service.impl;
 import com.supermarket.entity.SysUser;
 import com.supermarket.mapper.SysUserMapper;
 import com.supermarket.service.SysUserService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 用户Service实现
+ * 用户Service实现 - 使用HttpSession管理登录状态
  */
 @Service
 public class SysUserServiceImpl implements SysUserService {
 
-    @Resource
+    @Autowired
     private SysUserMapper sysUserMapper;
 
-    /** 当前登录用户（简化：单机版使用ThreadLocal模拟Session） */
-    private static final ThreadLocal<SysUser> LOGIN_USER = new ThreadLocal<>();
+    private HttpSession getSession() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        return attrs.getRequest().getSession();
+    }
 
     @Override
     public Map<String, Object> login(String username, String password) {
@@ -30,7 +35,7 @@ public class SysUserServiceImpl implements SysUserService {
             result.put("msg", "用户名或密码错误");
             return result;
         }
-        LOGIN_USER.set(user);
+        getSession().setAttribute("loginUser", user);
         result.put("success", true);
         result.put("msg", "登录成功");
         result.put("user", user);
@@ -49,12 +54,17 @@ public class SysUserServiceImpl implements SysUserService {
 
     @Override
     public SysUser getLoginUser() {
-        return LOGIN_USER.get();
+        try {
+            HttpSession session = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest().getSession();
+            return (SysUser) session.getAttribute("loginUser");
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
     public void logout() {
-        LOGIN_USER.remove();
+        getSession().removeAttribute("loginUser");
     }
 
     @Override

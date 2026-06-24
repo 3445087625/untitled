@@ -16,10 +16,10 @@
 
     <!-- 批量插入明细 -->
     <insert id="batchInsert" parameterType="list">
-        INSERT INTO sales_detail(order_id, product_id, price, quantity, subtotal)
+        INSERT INTO sales_detail(order_id, product_id, product_name, price, quantity, subtotal)
         VALUES
         <foreach collection="list" item="item" separator=",">
-            (#{item.orderId}, #{item.productId}, #{item.price},
+            (#{item.orderId}, #{item.productId}, #{item.productName}, #{item.price},
              #{item.quantity}, #{item.subtotal})
         </foreach>
     </insert>

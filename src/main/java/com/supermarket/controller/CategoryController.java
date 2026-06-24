@@ -5,7 +5,7 @@ import com.supermarket.entity.Category;
 import com.supermarket.service.CategoryService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 /**
@@ -15,7 +15,7 @@ import java.util.List;
 @RequestMapping("/api/category")
 public class CategoryController {
 
-    @Resource
+    @Autowired
     private CategoryService categoryService;
 
     /** 获取所有分类 */

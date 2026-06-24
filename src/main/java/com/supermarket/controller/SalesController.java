@@ -8,7 +8,7 @@ import com.supermarket.service.SalesService;
 import com.supermarket.service.SysUserService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 
@@ -19,9 +19,9 @@ import java.util.Map;
 @RequestMapping("/api/sales")
 public class SalesController {
 
-    @Resource
+    @Autowired
     private SalesService salesService;
-    @Resource
+    @Autowired
     private SysUserService sysUserService;
 
     /** 提交订单 */
@@ -82,5 +82,27 @@ public class SalesController {
     @GetMapping("/detail/{id}")
     public ResultVo<Map<String, Object>> detail(@PathVariable Integer id) {
         return ResultVo.success(salesService.getOrderDetail(id));
+    }
+
+    /** 今日销售汇总 */
+    @GetMapping("/today-summary")
+    public ResultVo<Map<String, Object>> todaySummary() {
+        return ResultVo.success(salesService.getTodaySummary());
+    }
+
+    /** 销售日报（查询视图 v_sales_summary） */
+    @GetMapping("/report")
+    public ResultVo<List<Map<String, Object>>> report() {
+        return ResultVo.success(salesService.getSalesReport());
+    }
+
+    /** 退款 */
+    @PostMapping("/refund/{id}")
+    public ResultVo<?> refund(@PathVariable Integer id) {
+        boolean ok = salesService.refund(id);
+        if (ok) {
+            return ResultVo.success("退款成功", null);
+        }
+        return ResultVo.error("退款失败：订单不存在或已退款");
     }
 }

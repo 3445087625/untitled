@@ -43,3 +43,10 @@ function fmtTime(timeStr) {
     if (!timeStr) return '-';
     return timeStr.replace('T', ' ').substring(0, 19);
 }
+
+// 平滑页面跳转（无纯色遮盖，淡出 → 淡入）
+function navigateTo(url) {
+    document.body.style.transition = 'opacity 0.2s ease';
+    document.body.style.opacity = '0';
+    setTimeout(function() { window.location.href = url; }, 220);
+}

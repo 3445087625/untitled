@@ -21,4 +21,14 @@ public interface SalesOrderMapper {
     int count(@Param("keyword") String keyword);
 
     SalesOrder selectById(Integer orderId);
+
+    /** 今日销售汇总：订单数 + 销售额 */
+    java.util.Map<String, Object> selectTodaySummary();
+
+    /** 查询视图：销售日报 */
+    java.util.List<java.util.Map<String, Object>> selectSalesReport();
+
+    /** 退款：更新订单状态 */
+    int updateOrderStatus(@Param("orderId") Integer orderId,
+                          @Param("orderStatus") Integer orderStatus);
 }

@@ -4,124 +4,101 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>收银台</title>
+<link rel="stylesheet" href="common.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Microsoft YaHei',sans-serif;background:#f5f6fa}
-.header{background:#2c3e50;color:white;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
-.header h2{font-size:18px}
-.header .nav a{color:#bdc3c7;text-decoration:none;margin-left:20px;font-size:14px}
-.header .nav a:hover,.header .nav a.active{color:white}
-.header .user{font-size:13px;color:#bdc3c7}
-.main{display:flex;height:calc(100vh - 44px)}
-.left{flex:1;padding:16px;display:flex;flex-direction:column}
-.right{width:380px;background:white;display:flex;flex-direction:column;box-shadow:-2px 0 8px rgba(0,0,0,0.06)}
-.search-box{display:flex;gap:10px;margin-bottom:12px}
-.search-box input{flex:1;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none}
-.search-box input:focus{border-color:#3498db}
-.btn{padding:8px 20px;border:none;border-radius:6px;cursor:pointer;font-size:14px;transition:0.3s}
-.btn-primary{background:#3498db;color:white}.btn-primary:hover{background:#2980b9}
-.btn-success{background:#27ae60;color:white}.btn-success:hover{background:#219a52}
-.btn-danger{background:#e74c3c;color:white}.btn-danger:hover{background:#c0392b}
-.btn-warning{background:#f39c12;color:white}
-.btn-sm{padding:4px 10px;font-size:12px}
-.product-grid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;align-content:start}
-.product-card{background:white;border:1px solid #eee;border-radius:10px;padding:14px;cursor:pointer;transition:0.2s}
-.product-card:hover{border-color:#3498db;box-shadow:0 4px 12px rgba(52,152,219,0.15)}
-.product-card .name{font-size:15px;font-weight:bold;color:#333;margin-bottom:6px}
-.product-card .info{font-size:12px;color:#999;margin-bottom:4px}
-.product-card .price{font-size:18px;color:#e74c3c;font-weight:bold}
-.product-card .stock{font-size:11px;color:#999}
-.empty{grid-column:1/-1;text-align:center;padding:60px;color:#999;font-size:14px}
-.cart-header{padding:16px;border-bottom:1px solid #eee;font-size:16px;font-weight:bold;color:#333;display:flex;justify-content:space-between}
-.cart-header span{font-size:12px;color:#999;font-weight:normal}
-.cart-body{flex:1;overflow-y:auto;padding:12px}
-.cart-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f5f5f5}
-.cart-item .name{flex:1;font-size:13px;color:#333}
-.cart-item .qty{display:flex;align-items:center;gap:6px;margin:0 10px}
-.cart-item .qty button{width:26px;height:26px;border:1px solid #ddd;border-radius:4px;background:white;cursor:pointer;font-size:14px}
-.cart-item .qty span{width:30px;text-align:center;font-size:13px}
-.cart-item .price{font-size:13px;color:#e74c3c;min-width:60px;text-align:right}
-.cart-item .del{color:#999;cursor:pointer;margin-left:8px;font-size:16px}
-.cart-empty{text-align:center;padding:60px 20px;color:#ccc;font-size:14px}
-.cart-footer{padding:16px;border-top:1px solid #eee}
-.cart-footer .row{display:flex;justify-content:space-between;margin-bottom:8px;font-size:14px;color:#666}
-.cart-footer .row.total{font-size:20px;font-weight:bold;color:#e74c3c}
-.cart-footer .input-row{margin:10px 0}
-.cart-footer .input-row label{font-size:12px;color:#999;display:block;margin-bottom:4px}
-.cart-footer .input-row input,.cart-footer .input-row select{width:100%;padding:8px 12px;border:1px solid #ddd;border-radius:6px;font-size:14px}
-.cart-footer .btn-row{display:flex;gap:10px;margin-top:14px}
-.cart-footer .btn-row button{flex:1;padding:12px;font-size:16px}
-.msg{padding:10px;border-radius:6px;margin:10px 16px;display:none}
-.msg.success{background:#d4edda;color:#155724;display:block}
-.msg.error{background:#f8d7da;color:#721c24;display:block}
+    .cashier-layout { display: flex; height: calc(100vh - 100px); }
+    .cashier-left   { flex: 1; padding: 16px; display: flex; flex-direction: column; min-width: 0; }
+    .cashier-right  { width: 380px; background: white; display: flex; flex-direction: column; box-shadow: -2px 0 8px rgba(0,0,0,0.06); }
+    .search-row     { display: flex; gap: 10px; margin-bottom: 12px; }
+    .search-row input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; transition: 0.3s; }
+    .search-row input:focus { border-color: var(--primary); }
+    .product-grid   { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 10px; align-content: start; }
+    .product-card   { background: white; border: 1px solid #eee; border-radius: 10px; padding: 14px; cursor: pointer; transition: 0.2s; }
+    .product-card:hover { border-color: var(--primary); box-shadow: 0 4px 14px rgba(102,126,234,0.15); transform: translateY(-1px); }
+    .product-card .pc-name  { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 6px; }
+    .product-card .pc-info  { font-size: 12px; color: #999; margin-bottom: 4px; }
+    .product-card .pc-price { font-size: 18px; color: #e74c3c; font-weight: bold; }
+    .product-card .pc-stock { font-size: 11px; color: #999; margin-top: 2px; }
+    .cart-header { padding: 16px; border-bottom: 1px solid #eee; font-size: 16px; font-weight: 600; display: flex; justify-content: space-between; }
+    .cart-header span { font-size: 12px; color: #999; font-weight: normal; }
+    .cart-body   { flex: 1; overflow-y: auto; padding: 12px; }
+    .cart-item   { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+    .cart-item .ci-name { flex: 1; font-size: 13px; color: #333; }
+    .cart-item .ci-qty  { display: flex; align-items: center; gap: 6px; margin: 0 10px; }
+    .cart-item .ci-qty button { width: 26px; height: 26px; border: 1px solid #ddd; border-radius: 4px; background: white; cursor: pointer; font-size: 14px; transition: 0.2s; }
+    .cart-item .ci-qty button:hover { background: #f0f0f0; }
+    .cart-item .ci-qty span { width: 28px; text-align: center; font-size: 13px; }
+    .cart-item .ci-price { font-size: 13px; color: #e74c3c; min-width: 60px; text-align: right; }
+    .cart-item .ci-del   { color: #ccc; cursor: pointer; margin-left: 8px; font-size: 18px; transition: 0.2s; }
+    .cart-item .ci-del:hover { color: #e74c3c; }
+    .cart-footer { padding: 16px; border-top: 1px solid #eee; }
+    .cart-footer .cf-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; color: #666; }
+    .cart-footer .cf-row.cf-total { font-size: 20px; font-weight: bold; color: #e74c3c; margin-top: 4px; }
+    .cart-footer .cf-input { margin: 10px 0; }
+    .cart-footer .cf-input label { font-size: 12px; color: #999; display: block; margin-bottom: 4px; }
+    .cart-footer .cf-input input, .cart-footer .cf-input select { width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+    .cart-footer .cf-btns { display: flex; gap: 10px; margin-top: 14px; }
+    .cart-footer .cf-btns button { flex: 1; padding: 12px; font-size: 16px; }
+    .empty-cart { text-align: center; padding: 60px 20px; color: #ccc; font-size: 14px; }
+    .empty-cart small { display: block; margin-top: 6px; font-size: 12px; }
 </style>
 </head>
 <body>
-<div class="header">
-<h2>🛒 超市前台销售系统</h2>
-<div class="nav">
-<a href="index.html">首页</a>
-<a href="product.html">商品管理</a>
-<a href="cashier.html" class="active">收银台</a>
-<a href="records.html">销售记录</a>
+<header class="header">
+    <div class="header-left"><span class="logo">🛒 超市前台销售系统</span></div>
+    <div class="header-right"><span class="header-user" id="userInfo"></span><button class="logout-btn" onclick="logout()">退出</button></div>
+</header>
+
+<nav class="nav">
+    <a href="#" class="nav-link" onclick="event.preventDefault();navigateTo('/index.html')">📊 首页概览</a>
+    <a href="#" class="nav-link" onclick="event.preventDefault();navigateTo('/product.html')">📦 商品管理</a>
+    <a href="#" class="nav-link active">💰 收银台</a>
+    <a href="#" class="nav-link" onclick="event.preventDefault();navigateTo('/records.html')">📋 销售记录</a>
+</nav>
+
+<div class="fade-in cashier-layout">
+    <div class="cashier-left">
+        <div class="search-row">
+            <input type="text" id="keyword" placeholder="🔍 搜索商品名称或条形码..." onkeydown="if(event.key==='Enter')searchProduct()">
+            <button class="btn btn-primary" onclick="searchProduct()">搜索</button>
+        </div>
+        <div class="product-grid" id="productGrid"></div>
+    </div>
+    <div class="cashier-right">
+        <div id="cartMsg" class="msg"></div>
+        <div class="cart-header">🛍 购物车 <span id="cartCount">0件商品</span></div>
+        <div class="cart-body" id="cartBody"></div>
+        <div class="cart-footer">
+            <div class="cf-row"><span>商品总数</span><span id="totalQty">0</span></div>
+            <div class="cf-row"><span>商品金额</span><span>¥<span id="totalAmount">0.00</span></span></div>
+            <div class="cf-row"><span>折扣</span><span>¥<span id="discountVal">0.00</span></span></div>
+            <div class="cf-row cf-total"><span>应收金额</span><span>¥<span id="receivable">0.00</span></span></div>
+            <div class="cf-input" id="discountRow"><label>折扣金额</label><input type="number" id="discountInput" value="0" step="0.01" onchange="calcTotal()"></div>
+            <div class="cf-input" id="paidRow"><label>实收金额</label><input type="number" id="paidInput" value="0" step="0.01" onchange="calcChange()" placeholder="请输入实收金额"></div>
+            <div class="cf-row" id="changeRow"><span>找零</span><span>¥<span id="changeAmount">0.00</span></span></div>
+            <div class="cf-input"><label>支付方式</label><select id="paymentMethod" onchange="onPayMethodChange()"><option value="1">💵 现金</option><option value="2">💚 微信</option><option value="3">💙 支付宝</option></select></div>
+            <div class="cf-btns"><button class="btn btn-cancel" onclick="clearCart()">清空</button><button class="btn btn-success" onclick="submitOrder()">收款 ¥<span id="submitAmount">0.00</span></button></div>
+        </div>
+    </div>
 </div>
-<div class="user" id="userInfo"></div>
-</div>
-<div class="main">
-<div class="left">
-<div class="search-box">
-<input type="text" id="keyword" placeholder="搜索商品名称或条形码..." onkeydown="if(event.key==='Enter')searchProduct()">
-<button class="btn btn-primary" onclick="searchProduct()">搜索</button>
-</div>
-<div class="product-grid" id="productGrid"></div>
-</div>
-<div class="right">
-<div id="cartMsg" class="msg"></div>
-<div class="cart-header">🛍 购物车 <span id="cartCount">0件商品</span></div>
-<div class="cart-body" id="cartBody"></div>
-<div class="cart-footer">
-<div class="row"><span>商品总数</span><span id="totalQty">0</span></div>
-<div class="row"><span>商品金额</span><span>¥<span id="totalAmount">0.00</span></span></div>
-<div class="row"><span>折扣</span><span>¥<span id="discountVal">0.00</span></span></div>
-<div class="row total"><span>应收金额</span><span>¥<span id="receivable">0.00</span></span></div>
-<div class="input-row">
-<label>折扣金额</label>
-<input type="number" id="discountInput" value="0" step="0.01" onchange="calcTotal()">
-</div>
-<div class="input-row">
-<label>实收金额</label>
-<input type="number" id="paidInput" value="0" step="0.01" onchange="calcChange()" placeholder="请输入实收金额">
-</div>
-<div class="row"><span>找零</span><span>¥<span id="changeAmount">0.00</span></span></div>
-<div class="input-row">
-<label>支付方式</label>
-<select id="paymentMethod">
-<option value="1">现金</option>
-<option value="2">微信</option>
-<option value="3">支付宝</option>
-</select>
-</div>
-<div class="btn-row">
-<button class="btn" style="background:#999;color:white" onclick="clearCart()">清空</button>
-<button class="btn btn-success" onclick="submitOrder()">收款 ¥<span id="submitAmount">0.00</span></button>
-</div>
-</div>
-</div>
-</div>
+
 <script src="common.js"></script>
 <script>
 var currentUser=null, cart=[];
 function init(){currentUser=checkLogin();if(!currentUser)return;document.getElementById('userInfo').textContent=currentUser.realName;searchProduct()}
-function showMsg(msg,isError){var el=document.getElementById('cartMsg');el.className='msg '+(isError?'error':'success');el.textContent=msg;setTimeout(function(){el.className='msg'},3000)}
+function logout(){ajax_post('/api/user/logout',null,function(){localStorage.removeItem('loginUser');navigateTo('/login.html')})}
+function showMsg(msg,isError){var el=document.getElementById('cartMsg');el.className='msg '+(isError?'msg-error':'msg-success');el.textContent=msg;setTimeout(function(){el.className='msg'},3000)}
 function searchProduct(){var kw=document.getElementById('keyword').value.trim();ajax_get('/api/product/search?keyword='+encodeURIComponent(kw),function(resp){if(resp.code===200)renderProducts(resp.data)})}
-function renderProducts(list){var html='';if(!list||list.length===0){html='<div class=\"empty\">没有找到商品</div>'}else{list.forEach(function(p){html+='<div class=\"product-card\" onclick=\"addToCart('+p.productId+',\''+p.productName.replace(/'/g,\"\\\\'\")+'\','+p.price+',\''+(p.unit||'个')+'\','+p.stock+')\">';html+='<div class=\"name\">'+p.productName+'</div>';html+='<div class=\"info\">'+p.categoryName+' | '+p.unit+'</div>';html+='<div class=\"price\">&yen;'+fmtMoney(p.price)+'</div>';html+='<div class=\"stock\">库存: '+p.stock+'</div></div>'})}document.getElementById('productGrid').innerHTML=html}
+function renderProducts(list){var html='';if(!list||list.length===0){html='<div class="empty">没有找到商品</div>'}else{list.forEach(function(p){html+='<div class="product-card" onclick="addToCart('+p.productId+',\''+p.productName.replace(/'/g,"&#39;")+'\','+p.price+',\''+(p.unit||'个')+'\','+p.stock+')"><div class="pc-name">'+p.productName+'</div><div class="pc-info">'+p.categoryName+' | '+p.unit+'</div><div class="pc-price">¥'+fmtMoney(p.price)+'</div><div class="pc-stock">库存: '+p.stock+'</div></div>'})}document.getElementById('productGrid').innerHTML=html}
 function addToCart(id,name,price,unit,stock){if(stock<=0){showMsg('该商品库存不足',true);return}var found=null;cart.forEach(function(item){if(item.productId===id)found=item});if(found){if(found.qty>=stock){showMsg('库存不足,当前库存:'+stock,true);return}found.qty++}else{cart.push({productId:id,productName:name,price:price,unit:unit,qty:1,stock:stock})}renderCart()}
 function changeQty(index,delta){var item=cart[index];var newQty=item.qty+delta;if(newQty<=0){cart.splice(index,1)}else if(newQty>item.stock){showMsg('库存不足,当前库存:'+item.stock,true);return}else{item.qty=newQty}renderCart()}
 function removeItem(index){cart.splice(index,1);renderCart()}
 function clearCart(){cart=[];renderCart()}
-function calcTotal(){var total=0;cart.forEach(function(item){total+=item.price*item.qty});var discount=parseFloat(document.getElementById('discountInput').value)||0;var receivable=total-discount;document.getElementById('totalAmount').textContent=fmtMoney(total);document.getElementById('discountVal').textContent=fmtMoney(discount);document.getElementById('receivable').textContent=fmtMoney(receivable);document.getElementById('submitAmount').textContent=fmtMoney(receivable);calcChange()}
+function calcTotal(){var total=0;cart.forEach(function(item){total+=item.price*item.qty});var discount=parseFloat(document.getElementById('discountInput').value)||0;var receivable=total-discount;document.getElementById('totalAmount').textContent=fmtMoney(total);document.getElementById('discountVal').textContent=fmtMoney(discount);document.getElementById('receivable').textContent=fmtMoney(receivable);document.getElementById('submitAmount').textContent=fmtMoney(receivable);syncPayMethod()}
 function calcChange(){var receivable=parseFloat(document.getElementById('receivable').textContent)||0;var paid=parseFloat(document.getElementById('paidInput').value)||0;document.getElementById('changeAmount').textContent=fmtMoney(paid-receivable)}
-function renderCart(){var html='';document.getElementById('cartCount').textContent=cart.length+'件商品';var totalQty=0;if(cart.length===0){html='<div class=\"cart-empty\">🛒 购物车是空的<br><small>点击左侧商品添加</small></div>'}else{cart.forEach(function(item,index){totalQty+=item.qty;html+='<div class=\"cart-item\">';html+='<div class=\"name\">'+item.productName+'<br><small style=\"color:#999\">&yen;'+fmtMoney(item.price)+'/'+item.unit+'</small></div>';html+='<div class=\"qty\"><button onclick=\"changeQty('+index+',-1)\">-</button><span>'+item.qty+'</span><button onclick=\"changeQty('+index+',1)\">+</button></div>';html+='<div class=\"price\">&yen;'+fmtMoney(item.price*item.qty)+'</div>';html+='<div class=\"del\" onclick=\"removeItem('+index+')\">&times;</div>';html+='</div>'})}document.getElementById('cartBody').innerHTML=html;document.getElementById('totalQty').textContent=totalQty;calcTotal()}
+function syncPayMethod(){var method=parseInt(document.getElementById('paymentMethod').value);if(method!==1){var receivable=parseFloat(document.getElementById('receivable').textContent)||0;document.getElementById('paidInput').value=fmtMoney(receivable);document.getElementById('changeAmount').textContent='0.00'}}
+function onPayMethodChange(){var method=parseInt(document.getElementById('paymentMethod').value);var paidInput=document.getElementById('paidInput');var changeRow=document.getElementById('changeRow');if(method===1){paidInput.disabled=false;paidInput.value='';paidInput.placeholder='请输入实收金额';changeRow.style.display='';calcChange()}else{var receivable=parseFloat(document.getElementById('receivable').textContent)||0;paidInput.value=fmtMoney(receivable);paidInput.disabled=true;paidInput.placeholder='';changeRow.style.display='none';document.getElementById('changeAmount').textContent='0.00'}}
+function renderCart(){var html='';document.getElementById('cartCount').textContent=cart.length+'件商品';var totalQty=0;if(cart.length===0){html='<div class="empty-cart">🛒 购物车是空的<br><small>点击左侧商品添加</small></div>'}else{cart.forEach(function(item,index){totalQty+=item.qty;html+='<div class="cart-item"><div class="ci-name">'+item.productName+'<br><small style="color:#999">¥'+fmtMoney(item.price)+'/'+item.unit+'</small></div><div class="ci-qty"><button onclick="changeQty('+index+',-1)">-</button><span>'+item.qty+'</span><button onclick="changeQty('+index+',1)">+</button></div><div class="ci-price">¥'+fmtMoney(item.price*item.qty)+'</div><div class="ci-del" onclick="removeItem('+index+')">×</div></div>'})}document.getElementById('cartBody').innerHTML=html;document.getElementById('totalQty').textContent=totalQty;calcTotal()}
 function submitOrder(){if(cart.length===0){showMsg('购物车为空',true);return}var paid=parseFloat(document.getElementById('paidInput').value)||0;var receivable=parseFloat(document.getElementById('receivable').textContent)||0;if(paid<receivable){showMsg('实收金额不足',true);return}var items=[];cart.forEach(function(item){items.push({productId:item.productId,quantity:item.qty})});var data={items:items,paidAmount:paid,discountAmount:parseFloat(document.getElementById('discountInput').value)||0,paymentMethod:parseInt(document.getElementById('paymentMethod').value)};ajax_post('/api/sales/submit',data,function(resp){if(resp.code===200){showMsg('收款成功! 订单号:'+resp.data.orderNo);cart=[];renderCart();searchProduct()}else showMsg(resp.msg,true)})}
 init();
 </script>

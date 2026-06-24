@@ -5,7 +5,7 @@ import com.supermarket.mapper.CategoryMapper;
 import com.supermarket.service.CategoryService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 /**
@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
-    @Resource
+    @Autowired
     private CategoryMapper categoryMapper;
 
     @Override

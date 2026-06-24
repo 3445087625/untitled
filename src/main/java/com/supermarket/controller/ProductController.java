@@ -5,7 +5,7 @@ import com.supermarket.entity.Product;
 import com.supermarket.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 import java.util.Map;
 
@@ -16,7 +16,7 @@ import java.util.Map;
 @RequestMapping("/api/product")
 public class ProductController {
 
-    @Resource
+    @Autowired
     private ProductService productService;
 
     /** 分页查询 */

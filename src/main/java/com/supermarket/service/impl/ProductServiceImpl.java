@@ -5,7 +5,7 @@ import com.supermarket.mapper.ProductMapper;
 import com.supermarket.service.ProductService;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +16,7 @@ import java.util.Map;
 @Service
 public class ProductServiceImpl implements ProductService {
 
-    @Resource
+    @Autowired
     private ProductMapper productMapper;
 
     @Override

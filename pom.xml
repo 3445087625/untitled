@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.18</version>
+        <version>3.4.5</version>
         <relativePath/>
     </parent>
 
@@ -18,7 +18,7 @@
     <description>数据库原理课程设计 - 超市前台销售系统</description>
 
     <properties>
-        <java.version>1.8</java.version>
+        <java.version>25</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -29,11 +29,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- MyBatis -->
+        <!-- MyBatis Spring Boot 3.x -->
         <dependency>
             <groupId>org.mybatis.spring.boot</groupId>
             <artifactId>mybatis-spring-boot-starter</artifactId>
-            <version>2.3.1</version>
+            <version>3.0.4</version>
         </dependency>
 
         <!-- MySQL Connector -->

@@ -91,7 +91,7 @@ function renderDetail() {
         var statusNames = {1: '已完成', 2: '已退货'};
         var payBadge = o.paymentMethod === 1 ? 'pay-cash' : o.paymentMethod === 2 ? 'pay-wechat' : 'pay-alipay';
         var statusBadge = o.orderStatus === 1 ? 'status-done' : 'status-refund';
-        var receivable = (parseFloat(o.totalAmount) || 0) - (parseFloat(o.discountAmount) || 0);
+        var receivable = (parseFloat(o.totalAmount) || 0) - (parseFloat(o.discountAmount) || 0) - (parseFloat(o.redeemedAmount) || 0);
 
         var html = '';
 
@@ -115,6 +115,7 @@ function renderDetail() {
         html += '<div class="amount-grid">';
         html += '<div class="amount-item"><div class="amount-label">商品金额</div><div class="amount-value">¥' + fmtMoney(o.totalAmount) + '</div></div>';
         html += '<div class="amount-item"><div class="amount-label">折扣</div><div class="amount-value green">¥' + fmtMoney(o.discountAmount) + '</div></div>';
+        html += '<div class="amount-item"><div class="amount-label">积分抵扣</div><div class="amount-value orange">¥' + fmtMoney(o.redeemedAmount || 0) + '</div></div>';
         html += '<div class="amount-item"><div class="amount-label">应收</div><div class="amount-value red">¥' + fmtMoney(receivable) + '</div></div>';
         html += '<div class="amount-item"><div class="amount-label">实收</div><div class="amount-value">¥' + fmtMoney(o.paidAmount) + '</div></div>';
 

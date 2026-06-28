@@ -10,8 +10,8 @@ import java.util.Map;
  */
 public interface SalesService {
 
-    /** 提交销售订单 */
-    Map<String, Object> submitOrder(SalesOrder order, List<SalesDetail> details);
+    /** 提交销售订单，redeemPoints 可为 null */
+    Map<String, Object> submitOrder(SalesOrder order, List<SalesDetail> details, Integer redeemPoints);
 
     /** 分页查订单 */
     Map<String, Object> getOrderPage(String keyword, Integer page, Integer limit);

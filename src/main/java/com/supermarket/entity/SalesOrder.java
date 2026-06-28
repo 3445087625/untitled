@@ -18,6 +18,7 @@ public class SalesOrder {
     private Integer memberId;        // 会员ID（可为空）
     private BigDecimal totalAmount;  // 订单总金额
     private BigDecimal discountAmount; // 折扣金额
+    private BigDecimal redeemedAmount; // 积分抵扣金额
     private BigDecimal paidAmount;   // 实收金额
     private BigDecimal changeAmount; // 找零金额
     private Integer paymentMethod;   // 支付方式：1现金 2微信 3支付宝
@@ -44,6 +45,8 @@ public class SalesOrder {
     public void setTotalAmount(BigDecimal totalAmount) { this.totalAmount = totalAmount; }
     public BigDecimal getDiscountAmount() { return discountAmount; }
     public void setDiscountAmount(BigDecimal discountAmount) { this.discountAmount = discountAmount; }
+    public BigDecimal getRedeemedAmount() { return redeemedAmount; }
+    public void setRedeemedAmount(BigDecimal redeemedAmount) { this.redeemedAmount = redeemedAmount; }
     public BigDecimal getPaidAmount() { return paidAmount; }
     public void setPaidAmount(BigDecimal paidAmount) { this.paidAmount = paidAmount; }
     public BigDecimal getChangeAmount() { return changeAmount; }

@@ -59,8 +59,10 @@ CREATE TABLE sales_order (
     order_id        INT AUTO_INCREMENT PRIMARY KEY COMMENT '订单ID',
     order_no        VARCHAR(32)  NOT NULL COMMENT '订单编号',
     user_id         INT          NOT NULL COMMENT '收银员ID',
+    member_id       INT          DEFAULT NULL COMMENT '会员ID（可空，非会员）',
     total_amount    DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '订单总金额',
     discount_amount DECIMAL(10,2) DEFAULT 0.00 COMMENT '优惠金额',
+    redeemed_amount DECIMAL(10,2) DEFAULT 0.00 COMMENT '积分抵扣金额',
     paid_amount     DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '实收金额',
     change_amount   DECIMAL(10,2) DEFAULT 0.00 COMMENT '找零金额',
     payment_method  TINYINT      DEFAULT 1 COMMENT '支付方式: 1现金 2微信 3支付宝',
@@ -69,8 +71,10 @@ CREATE TABLE sales_order (
     create_time     DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     UNIQUE KEY uk_order_no (order_no),
     KEY idx_user_id (user_id),
+    KEY idx_member_id (member_id),
     KEY idx_create_time (create_time),
-    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES sys_user(user_id)
+    CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES sys_user(user_id),
+    CONSTRAINT fk_order_member FOREIGN KEY (member_id) REFERENCES member(member_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='销售订单表';
 
 -- 5. 销售明细表 (columns match SalesDetail.java entity)

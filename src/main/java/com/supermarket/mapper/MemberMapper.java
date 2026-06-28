@@ -17,6 +17,9 @@ public interface MemberMapper {
     /** 增加积分 */
     int addPoints(@Param("memberId") Integer memberId, @Param("points") Integer points);
 
+    /** 扣减积分（兑换） */
+    int deductPoints(@Param("memberId") Integer memberId, @Param("points") Integer points);
+
     /** 注册会员 */
     int insert(Member member);
 }

@@ -55,8 +55,8 @@ public class SalesServiceImpl implements SalesService {
      * @return success=true 时包含 orderId 和 orderNo
      */
     @Override
-    @Transactional  // 事务：保证订单和明细、库存要么全成功，要么全回滚
-    public Map<String, Object> submitOrder(SalesOrder order, List<SalesDetail> details) {
+    @Transactional  // 事务：保证订单和明细、库存、积分要么全成功，要么全回滚
+    public Map<String, Object> submitOrder(SalesOrder order, List<SalesDetail> details, Integer redeemPoints) {
         Map<String, Object> result = new HashMap<>();
 
         // 1. 生成订单编号
@@ -88,9 +88,42 @@ public class SalesServiceImpl implements SalesService {
             order.setDiscountAmount(BigDecimal.ZERO);
         }
 
-        // 3. 计算找零（现金支付且实收 > 应收时）
+        // 2.5 积分兑换：100积分 = 1元（扣积分，独立记入 redeemed_amount）
+        if (redeemPoints != null && redeemPoints > 0 && order.getMemberId() != null) {
+            BigDecimal redeemAmount = new BigDecimal(redeemPoints)
+                    .divide(new BigDecimal(100), 2, java.math.RoundingMode.DOWN);
+            if (redeemAmount.compareTo(BigDecimal.ZERO) > 0) {
+                int deducted = memberMapper.deductPoints(order.getMemberId(), redeemPoints);
+                if (deducted == 0) {
+                    result.put("success", false);
+                    result.put("msg", "积分不足，兑换失败");
+                    return result;
+                }
+                order.setRedeemedAmount(redeemAmount);
+                result.put("redeemedPoints", redeemPoints);
+                result.put("redeemedAmount", redeemAmount);
+            }
+        }
+        if (order.getRedeemedAmount() == null) {
+            order.setRedeemedAmount(BigDecimal.ZERO);
+        }
+
+        // 折扣不能超过商品总金额，否则截断（防止倒贴）
+        if (order.getDiscountAmount().compareTo(total) > 0) {
+            order.setDiscountAmount(total);
+        }
+
+        // 3. 校验实收金额不能小于应收（应收 = 总金额 - 折扣 - 积分抵扣）
+        BigDecimal receivable = total.subtract(order.getDiscountAmount())
+                .subtract(order.getRedeemedAmount());
+        if (order.getPaidAmount() != null && order.getPaidAmount().compareTo(receivable) < 0) {
+            result.put("success", false);
+            result.put("msg", "实收金额不足，应收 ¥" + receivable + "，实收 ¥" + order.getPaidAmount());
+            return result;
+        }
+
+        // 4. 计算找零（现金支付且实收 > 应收时）
         if (order.getPaymentMethod() != null && order.getPaymentMethod() == 1) {
-            BigDecimal receivable = total.subtract(order.getDiscountAmount());
             if (order.getPaidAmount() != null && order.getPaidAmount().compareTo(receivable) > 0) {
                 order.setChangeAmount(order.getPaidAmount().subtract(receivable));
             } else {
@@ -100,16 +133,16 @@ public class SalesServiceImpl implements SalesService {
             order.setChangeAmount(BigDecimal.ZERO);
         }
 
-        // 4. 保存订单
+        // 5. 保存订单
         salesOrderMapper.insert(order);
 
-        // 5. 保存明细
+        // 6. 保存明细
         for (SalesDetail detail : details) {
             detail.setOrderId(order.getOrderId());
         }
         salesDetailMapper.batchInsert(details);
 
-        // 6. 扣减库存
+        // 7. 扣减库存
         for (SalesDetail detail : details) {
             productMapper.updateStock(detail.getProductId(), -detail.getQuantity());
         }

@@ -10,6 +10,7 @@
         <result column="member_id" property="memberId"/>
         <result column="total_amount" property="totalAmount"/>
         <result column="discount_amount" property="discountAmount"/>
+        <result column="redeemed_amount" property="redeemedAmount"/>
         <result column="paid_amount" property="paidAmount"/>
         <result column="change_amount" property="changeAmount"/>
         <result column="payment_method" property="paymentMethod"/>
@@ -24,9 +25,9 @@
     <!-- 创建订单 -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="orderId" parameterType="com.supermarket.entity.SalesOrder">
         INSERT INTO sales_order(order_no, user_id, member_id, total_amount, discount_amount,
-                               paid_amount, change_amount, payment_method, remark)
+                               redeemed_amount, paid_amount, change_amount, payment_method, remark)
         VALUES(#{orderNo}, #{userId}, #{memberId}, #{totalAmount}, #{discountAmount},
-              #{paidAmount}, #{changeAmount}, #{paymentMethod}, #{remark})
+              #{redeemedAmount}, #{paidAmount}, #{changeAmount}, #{paymentMethod}, #{remark})
     </insert>
 
     <!--

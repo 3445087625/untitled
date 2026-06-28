@@ -67,6 +67,10 @@ public class SalesController {
         if (params.get("memberId") != null) {
             order.setMemberId(Integer.parseInt(params.get("memberId").toString()));
         }
+        Integer redeemPoints = null;
+        if (params.get("redeemPoints") != null) {
+            redeemPoints = Integer.parseInt(params.get("redeemPoints").toString());
+        }
 
         // 解析明细列表
         @SuppressWarnings("unchecked")
@@ -79,7 +83,7 @@ public class SalesController {
             details.add(detail);
         }
 
-        Map<String, Object> result = salesService.submitOrder(order, details);
+        Map<String, Object> result = salesService.submitOrder(order, details, redeemPoints);
         if ((Boolean) result.get("success")) {
             return ResultVo.success((String) result.get("msg"), result);
         }

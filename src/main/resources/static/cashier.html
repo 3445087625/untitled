@@ -64,6 +64,8 @@
     .modal-card .modal-error.show { display: block; }
     .modal-card .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
     .modal-card .modal-actions button { flex: 1; padding: 12px; font-size: 15px; }
+    .modal-card .modal-redeem { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #dde; }
+    .modal-card .modal-redeem label { font-size: 13px; color: #e67e22; font-weight: 600; }
 </style>
 </head>
 <body>
@@ -131,6 +133,14 @@
             <div class="mr-row"><span class="mr-label">当前积分</span><span class="mr-value" id="mrPoints">--</span></div>
             <div class="mr-points-tip" id="mrPointsTip"></div>
         </div>
+        <div class="modal-redeem" id="redeemSection" style="display:none">
+            <label>🎁 积分兑换（100积分 = ¥1）</label>
+            <div class="modal-search" style="margin-top:6px">
+                <input type="number" id="redeemInput" placeholder="输入兑换积分，如 1000" min="0" step="100" onkeydown="if(event.key==='Enter')applyRedeem()">
+                <button class="btn btn-warning" onclick="applyRedeem()">兑换</button>
+            </div>
+            <div style="font-size:12px;color:#999;margin-top:4px" id="redeemPreview"></div>
+        </div>
         <div class="modal-actions">
             <button class="btn btn-cancel" onclick="skipMember()">跳过（非会员）</button>
             <button class="btn btn-success" id="confirmMemberBtn" onclick="confirmWithMember()" disabled>确认收款</button>
@@ -143,7 +153,7 @@
 
 <script src="common.js"></script>
 <script>
-var currentUser=null, cart=[], currentMember=null;
+var currentUser=null, cart=[], currentMember=null, redeemPoints=0;
 
 function init(){currentUser=checkLogin();if(!currentUser)return;document.getElementById('userInfo').textContent=currentUser.realName;searchProduct()}
 function logout(){ajax_post('/api/user/logout',null,function(){localStorage.removeItem('loginUser');navigateTo('/login.html')})}
@@ -154,7 +164,7 @@ function addToCart(id,name,price,unit,stock){if(stock<=0){showMsg('该商品库�
 function changeQty(index,delta){var item=cart[index];var newQty=item.qty+delta;if(newQty<=0){cart.splice(index,1)}else if(newQty>item.stock){showMsg('库存不足,当前库存:'+item.stock,true);return}else{item.qty=newQty}renderCart()}
 function removeItem(index){cart.splice(index,1);renderCart()}
 function clearCart(){cart=[];renderCart()}
-function calcTotal(){var total=0;cart.forEach(function(item){total+=item.price*item.qty});var discount=parseFloat(document.getElementById('discountInput').value)||0;var receivable=total-discount;document.getElementById('totalAmount').textContent=fmtMoney(total);document.getElementById('discountVal').textContent=fmtMoney(discount);document.getElementById('receivable').textContent=fmtMoney(receivable);document.getElementById('submitAmount').textContent=fmtMoney(receivable);syncPayMethod()}
+function calcTotal(){var total=0;cart.forEach(function(item){total+=item.price*item.qty});var discount=parseFloat(document.getElementById('discountInput').value)||0;if(discount>total){discount=total;document.getElementById('discountInput').value=fmtMoney(total);showMsg('折扣不能超过商品金额，已自动调整为 ¥'+fmtMoney(total),true)}var receivable=total-discount;document.getElementById('totalAmount').textContent=fmtMoney(total);document.getElementById('discountVal').textContent=fmtMoney(discount);document.getElementById('receivable').textContent=fmtMoney(receivable);document.getElementById('submitAmount').textContent=fmtMoney(receivable);syncPayMethod()}
 function calcChange(){var receivable=parseFloat(document.getElementById('receivable').textContent)||0;var paid=parseFloat(document.getElementById('paidInput').value)||0;document.getElementById('changeAmount').textContent=fmtMoney(paid-receivable)}
 function syncPayMethod(){var method=parseInt(document.getElementById('paymentMethod').value);if(method!==1){var receivable=parseFloat(document.getElementById('receivable').textContent)||0;document.getElementById('paidInput').value=fmtMoney(receivable);document.getElementById('changeAmount').textContent='0.00'}}
 function onPayMethodChange(){var method=parseInt(document.getElementById('paymentMethod').value);var paidInput=document.getElementById('paidInput');var changeRow=document.getElementById('changeRow');if(method===1){paidInput.disabled=false;paidInput.value='';paidInput.placeholder='请输入实收金额';changeRow.style.display='';calcChange()}else{var receivable=parseFloat(document.getElementById('receivable').textContent)||0;paidInput.value=fmtMoney(receivable);paidInput.disabled=true;paidInput.placeholder='';changeRow.style.display='none';document.getElementById('changeAmount').textContent='0.00'}}
@@ -170,6 +180,7 @@ function showMemberModal(){
 
     // 重置弹窗
     currentMember=null;
+    redeemPoints=0;
     document.getElementById('memberAccountInput').value='';
     document.getElementById('registerAccountInput').value='';
     document.getElementById('memberError').className='modal-error';
@@ -178,6 +189,9 @@ function showMemberModal(){
     document.getElementById('confirmMemberBtn').disabled=true;
     document.getElementById('registerSection').style.display='none';
     document.getElementById('lookupSection').style.display='';
+    document.getElementById('redeemSection').style.display='none';
+    document.getElementById('redeemInput').value='';
+    document.getElementById('redeemPreview').textContent='';
     document.getElementById('toggleRegisterBtn').textContent='📝 注册新会员';
     document.getElementById('memberModal').classList.add('show');
     setTimeout(function(){document.getElementById('memberAccountInput').focus();},300);
@@ -203,6 +217,11 @@ function lookupMember(){
             document.getElementById('mrPointsTip').textContent='本次消费可获得 +'+newPoints+' 积分';
             document.getElementById('memberResult').className='modal-result show';
             document.getElementById('confirmMemberBtn').disabled=false;
+            // 积分兑换区域
+            redeemPoints=0;
+            document.getElementById('redeemInput').value='';
+            document.getElementById('redeemPreview').textContent='';
+            document.getElementById('redeemSection').style.display='';
         }else{
             document.getElementById('memberError').className='modal-error show';
             document.getElementById('memberError').textContent=resp.msg||'会员账号不存在';
@@ -233,20 +252,47 @@ function doSubmitOrder(memberId){
         paymentMethod:parseInt(document.getElementById('paymentMethod').value)
     };
     if(memberId){data.memberId=memberId}
+    if(redeemPoints>0){data.redeemPoints=redeemPoints}
     ajax_post('/api/sales/submit',data,function(resp){
         if(resp.code===200){
             var pointsMsg='';
             if(memberId&&currentMember){
-                var newPoints=Math.floor(paid);
-                pointsMsg=' | 会员 '+currentMember.nickname+' 积分 +'+newPoints;
+                var netPoints=Math.floor(paid)-(redeemPoints||0);
+                pointsMsg=' | 会员 '+currentMember.nickname;
+                if(resp.data.redeemedPoints){
+                    pointsMsg+=' 兑换 -'+resp.data.redeemedPoints+'积分(抵¥'+parseFloat(resp.data.redeemedAmount).toFixed(2)+')';
+                }
+                if(netPoints>0) pointsMsg+=' 消费 +'+netPoints+'积分';
             }
             showMsg('收款成功! 订单号:'+resp.data.orderNo+pointsMsg);
             cart=[];
             currentMember=null;
+            redeemPoints=0;
             renderCart();
             searchProduct();
         }else{showMsg(resp.msg,true)}
     });
+}
+
+function applyRedeem(){
+    if(!currentMember) return;
+    var points=parseInt(document.getElementById('redeemInput').value)||0;
+    if(points<=0){document.getElementById('redeemPreview').textContent='请输入有效积分数';return}
+    if(points>currentMember.points){document.getElementById('redeemPreview').textContent='可用积分不足（当前：'+currentMember.points+'）';return}
+    var amount=(points/100).toFixed(2);
+    document.getElementById('redeemPreview').textContent='可抵扣 ¥'+amount+'（消耗 '+points+' 积分）';
+    redeemPoints=points;
+    // 同步实收：非现金自动调为应收，现金不变
+    var method=parseInt(document.getElementById('paymentMethod').value);
+    if(method!==1){
+        var total=parseFloat(document.getElementById('totalAmount').textContent)||0;
+        var oldDiscount=parseFloat(document.getElementById('discountInput').value)||0;
+        var newReceivable=total-oldDiscount-parseFloat(amount);
+        if(newReceivable<0)newReceivable=0;
+        document.getElementById('paidInput').value=fmtMoney(newReceivable);
+        document.getElementById('receivable').textContent=fmtMoney(newReceivable);
+        document.getElementById('submitAmount').textContent=fmtMoney(newReceivable);
+    }
 }
 
 function toggleRegisterMode(){

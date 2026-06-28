@@ -25,6 +25,10 @@
         UPDATE member SET points = points + #{points} WHERE member_id = #{memberId}
     </update>
 
+    <update id="deductPoints">
+        UPDATE member SET points = points - #{points} WHERE member_id = #{memberId} AND points >= #{points}
+    </update>
+
     <insert id="insert" useGeneratedKeys="true" keyProperty="memberId" parameterType="com.supermarket.entity.Member">
         INSERT INTO member(account_no, nickname, points, phone)
         VALUES(#{accountNo}, #{nickname}, #{points}, #{phone})

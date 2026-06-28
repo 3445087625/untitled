@@ -37,7 +37,7 @@ public class SalesController {
      * 提交销售订单
      * <p>
      * 请求体 JSON 格式：
-     * { items: [{productId, quantity}], paidAmount, discountAmount, paymentMethod }
+     * { items: [{productId, quantity}], paidAmount, discountAmount, paymentMethod, memberId }
      * </p>
      */
     @PostMapping("/submit")
@@ -63,6 +63,9 @@ public class SalesController {
         }
         if (params.get("remark") != null) {
             order.setRemark((String) params.get("remark"));
+        }
+        if (params.get("memberId") != null) {
+            order.setMemberId(Integer.parseInt(params.get("memberId").toString()));
         }
 
         // 解析明细列表

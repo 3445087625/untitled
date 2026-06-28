@@ -91,6 +91,20 @@ CREATE TABLE sales_detail (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='销售明细表';
 
 -- ============================================
+-- 6. 会员表
+-- ============================================
+DROP TABLE IF EXISTS member;
+CREATE TABLE member (
+    member_id   INT AUTO_INCREMENT PRIMARY KEY COMMENT '会员ID',
+    account_no  VARCHAR(32)  NOT NULL UNIQUE COMMENT '会员账号',
+    nickname    VARCHAR(50)  NOT NULL COMMENT '昵称',
+    points      INT          DEFAULT 0 COMMENT '积分',
+    phone       VARCHAR(20)  DEFAULT NULL COMMENT '手机号',
+    create_time DATETIME     DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
+    status      TINYINT      DEFAULT 1 COMMENT '状态: 1正常 0禁用'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='会员表';
+
+-- ============================================
 -- 初始数据
 -- ============================================
 
@@ -126,6 +140,13 @@ INSERT INTO product(product_name, category_id, price, stock, unit, barcode, imag
 ('心相印抽纸',       2, 12.90, 150, '提', '690123456713', NULL, 1),
 ('金龙鱼调和油5L',   1, 69.90, 40,  '桶', '690123456714', NULL, 1),
 ('旺旺仙贝',         4, 5.00,  120, '袋', '690123456715', NULL, 1);
+
+-- 会员数据
+INSERT INTO member(account_no, nickname, points, phone) VALUES
+('11111111111', '常建航', 150, '13800001111'),
+('22222222222', '王小明', 320, '13800002222'),
+('33333333333', '李大白', 80,  '13800003333'),
+('44444444444', '赵小红', 560, '13800004444');
 
 -- ============================================
 -- 创建视图：销售汇总视图 (使用paid_amount)

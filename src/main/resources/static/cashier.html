@@ -41,6 +41,29 @@
     .cart-footer .cf-btns button { flex: 1; padding: 12px; font-size: 16px; }
     .empty-cart { text-align: center; padding: 60px 20px; color: #ccc; font-size: 14px; }
     .empty-cart small { display: block; margin-top: 6px; font-size: 12px; }
+
+    /* 会员弹窗 */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.45); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-overlay.show { display: flex; }
+    .modal-card { background: white; border-radius: 14px; padding: 32px; width: 420px; max-width: 90vw; box-shadow: 0 10px 40px rgba(0,0,0,0.2); animation: modalIn 0.25s ease; }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(-20px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-card .modal-title { font-size: 18px; font-weight: 700; color: #333; margin-bottom: 20px; text-align: center; }
+    .modal-card .modal-section { margin-bottom: 16px; }
+    .modal-card .modal-section label { font-size: 13px; color: #666; display: block; margin-bottom: 6px; }
+    .modal-card .modal-search { display: flex; gap: 8px; }
+    .modal-card .modal-search input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; transition: 0.3s; }
+    .modal-card .modal-search input:focus { border-color: var(--primary); }
+    .modal-card .modal-search button { padding: 10px 18px; font-size: 14px; white-space: nowrap; }
+    .modal-card .modal-result { background: #f8f9fc; border-radius: 10px; padding: 16px; margin-top: 12px; display: none; }
+    .modal-card .modal-result.show { display: block; }
+    .modal-card .modal-result .mr-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+    .modal-card .modal-result .mr-row .mr-label { color: #999; }
+    .modal-card .modal-result .mr-row .mr-value { color: #333; font-weight: 500; }
+    .modal-card .modal-result .mr-points-tip { text-align: center; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #dde; font-size: 13px; color: #e67e22; font-weight: 600; }
+    .modal-card .modal-error { color: #e74c3c; font-size: 13px; margin-top: 8px; display: none; }
+    .modal-card .modal-error.show { display: block; }
+    .modal-card .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-card .modal-actions button { flex: 1; padding: 12px; font-size: 15px; }
 </style>
 </head>
 <body>
@@ -77,14 +100,51 @@
             <div class="cf-input" id="paidRow"><label>实收金额</label><input type="number" id="paidInput" value="0" step="0.01" onchange="calcChange()" placeholder="请输入实收金额"></div>
             <div class="cf-row" id="changeRow"><span>找零</span><span>¥<span id="changeAmount">0.00</span></span></div>
             <div class="cf-input"><label>支付方式</label><select id="paymentMethod" onchange="onPayMethodChange()"><option value="1">💵 现金</option><option value="2">💚 微信</option><option value="3">💙 支付宝</option></select></div>
-            <div class="cf-btns"><button class="btn btn-cancel" onclick="clearCart()">清空</button><button class="btn btn-success" onclick="submitOrder()">收款 ¥<span id="submitAmount">0.00</span></button></div>
+            <div class="cf-btns"><button class="btn btn-cancel" onclick="clearCart()">清空</button><button class="btn btn-success" onclick="showMemberModal()">收款 ¥<span id="submitAmount">0.00</span></button></div>
+        </div>
+    </div>
+</div>
+
+<!-- 会员弹窗 -->
+<div class="modal-overlay" id="memberModal">
+    <div class="modal-card">
+        <div class="modal-title">🎫 会员验证</div>
+        <div class="modal-section" id="lookupSection">
+            <label>请输入会员账号</label>
+            <div class="modal-search">
+                <input type="text" id="memberAccountInput" placeholder="输入11位会员账号，如 11111111111" onkeydown="if(event.key==='Enter')lookupMember()">
+                <button class="btn btn-primary" onclick="lookupMember()">查询</button>
+            </div>
+            <div class="modal-error" id="memberError"></div>
+        </div>
+        <div class="modal-section" id="registerSection" style="display:none">
+            <label>注册新会员（输入11位账号）</label>
+            <div class="modal-search">
+                <input type="text" id="registerAccountInput" placeholder="输入11位会员账号，如 55555555555" onkeydown="if(event.key==='Enter')registerMember()">
+                <button class="btn btn-primary" onclick="registerMember()">注册</button>
+            </div>
+            <div class="modal-error" id="registerError"></div>
+        </div>
+        <div class="modal-result" id="memberResult">
+            <div class="mr-row"><span class="mr-label">会员昵称</span><span class="mr-value" id="mrNickname">--</span></div>
+            <div class="mr-row"><span class="mr-label">会员账号</span><span class="mr-value" id="mrAccountNo">--</span></div>
+            <div class="mr-row"><span class="mr-label">当前积分</span><span class="mr-value" id="mrPoints">--</span></div>
+            <div class="mr-points-tip" id="mrPointsTip"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-cancel" onclick="skipMember()">跳过（非会员）</button>
+            <button class="btn btn-success" id="confirmMemberBtn" onclick="confirmWithMember()" disabled>确认收款</button>
+        </div>
+        <div class="modal-actions" style="margin-top:18px">
+            <button class="btn btn-primary" id="toggleRegisterBtn" onclick="toggleRegisterMode()">📝 注册新会员</button>
         </div>
     </div>
 </div>
 
 <script src="common.js"></script>
 <script>
-var currentUser=null, cart=[];
+var currentUser=null, cart=[], currentMember=null;
+
 function init(){currentUser=checkLogin();if(!currentUser)return;document.getElementById('userInfo').textContent=currentUser.realName;searchProduct()}
 function logout(){ajax_post('/api/user/logout',null,function(){localStorage.removeItem('loginUser');navigateTo('/login.html')})}
 function showMsg(msg,isError){var el=document.getElementById('cartMsg');el.className='msg '+(isError?'msg-error':'msg-success');el.textContent=msg;setTimeout(function(){el.className='msg'},3000)}
@@ -99,7 +159,140 @@ function calcChange(){var receivable=parseFloat(document.getElementById('receiva
 function syncPayMethod(){var method=parseInt(document.getElementById('paymentMethod').value);if(method!==1){var receivable=parseFloat(document.getElementById('receivable').textContent)||0;document.getElementById('paidInput').value=fmtMoney(receivable);document.getElementById('changeAmount').textContent='0.00'}}
 function onPayMethodChange(){var method=parseInt(document.getElementById('paymentMethod').value);var paidInput=document.getElementById('paidInput');var changeRow=document.getElementById('changeRow');if(method===1){paidInput.disabled=false;paidInput.value='';paidInput.placeholder='请输入实收金额';changeRow.style.display='';calcChange()}else{var receivable=parseFloat(document.getElementById('receivable').textContent)||0;paidInput.value=fmtMoney(receivable);paidInput.disabled=true;paidInput.placeholder='';changeRow.style.display='none';document.getElementById('changeAmount').textContent='0.00'}}
 function renderCart(){var html='';document.getElementById('cartCount').textContent=cart.length+'件商品';var totalQty=0;if(cart.length===0){html='<div class="empty-cart">🛒 购物车是空的<br><small>点击左侧商品添加</small></div>'}else{cart.forEach(function(item,index){totalQty+=item.qty;html+='<div class="cart-item"><div class="ci-name">'+item.productName+'<br><small style="color:#999">¥'+fmtMoney(item.price)+'/'+item.unit+'</small></div><div class="ci-qty"><button onclick="changeQty('+index+',-1)">-</button><span>'+item.qty+'</span><button onclick="changeQty('+index+',1)">+</button></div><div class="ci-price">¥'+fmtMoney(item.price*item.qty)+'</div><div class="ci-del" onclick="removeItem('+index+')">×</div></div>'})}document.getElementById('cartBody').innerHTML=html;document.getElementById('totalQty').textContent=totalQty;calcTotal()}
-function submitOrder(){if(cart.length===0){showMsg('购物车为空',true);return}var paid=parseFloat(document.getElementById('paidInput').value)||0;var receivable=parseFloat(document.getElementById('receivable').textContent)||0;if(paid<receivable){showMsg('实收金额不足',true);return}var items=[];cart.forEach(function(item){items.push({productId:item.productId,quantity:item.qty})});var data={items:items,paidAmount:paid,discountAmount:parseFloat(document.getElementById('discountInput').value)||0,paymentMethod:parseInt(document.getElementById('paymentMethod').value)};ajax_post('/api/sales/submit',data,function(resp){if(resp.code===200){showMsg('收款成功! 订单号:'+resp.data.orderNo);cart=[];renderCart();searchProduct()}else showMsg(resp.msg,true)})}
+
+// ========== 会员弹窗逻辑 ==========
+
+function showMemberModal(){
+    if(cart.length===0){showMsg('购物车为空',true);return}
+    var paid=parseFloat(document.getElementById('paidInput').value)||0;
+    var receivable=parseFloat(document.getElementById('receivable').textContent)||0;
+    if(paid<receivable){showMsg('实收金额不足',true);return}
+
+    // 重置弹窗
+    currentMember=null;
+    document.getElementById('memberAccountInput').value='';
+    document.getElementById('registerAccountInput').value='';
+    document.getElementById('memberError').className='modal-error';
+    document.getElementById('registerError').className='modal-error';
+    document.getElementById('memberResult').className='modal-result';
+    document.getElementById('confirmMemberBtn').disabled=true;
+    document.getElementById('registerSection').style.display='none';
+    document.getElementById('lookupSection').style.display='';
+    document.getElementById('toggleRegisterBtn').textContent='📝 注册新会员';
+    document.getElementById('memberModal').classList.add('show');
+    setTimeout(function(){document.getElementById('memberAccountInput').focus();},300);
+}
+
+function lookupMember(){
+    var accountNo=document.getElementById('memberAccountInput').value.trim();
+    if(!accountNo){document.getElementById('memberError').className='modal-error show';document.getElementById('memberError').textContent='请输入会员账号';return}
+    document.getElementById('memberError').className='modal-error';
+    document.getElementById('memberResult').className='modal-result';
+    document.getElementById('confirmMemberBtn').disabled=true;
+    currentMember=null;
+
+    ajax_get('/api/member/lookup?accountNo='+encodeURIComponent(accountNo),function(resp){
+        if(resp.code===200){
+            var m=resp.data;
+            currentMember=m;
+            document.getElementById('mrNickname').textContent=m.nickname;
+            document.getElementById('mrAccountNo').textContent=m.accountNo;
+            document.getElementById('mrPoints').textContent=m.points+' 积分';
+            var paid=parseFloat(document.getElementById('paidInput').value)||0;
+            var newPoints=Math.floor(paid);
+            document.getElementById('mrPointsTip').textContent='本次消费可获得 +'+newPoints+' 积分';
+            document.getElementById('memberResult').className='modal-result show';
+            document.getElementById('confirmMemberBtn').disabled=false;
+        }else{
+            document.getElementById('memberError').className='modal-error show';
+            document.getElementById('memberError').textContent=resp.msg||'会员账号不存在';
+        }
+    });
+}
+
+function skipMember(){
+    document.getElementById('memberModal').classList.remove('show');
+    currentMember=null;
+    doSubmitOrder();
+}
+
+function confirmWithMember(){
+    if(!currentMember){lookupMember();return}
+    document.getElementById('memberModal').classList.remove('show');
+    doSubmitOrder(currentMember.memberId);
+}
+
+function doSubmitOrder(memberId){
+    var paid=parseFloat(document.getElementById('paidInput').value)||0;
+    var items=[];
+    cart.forEach(function(item){items.push({productId:item.productId,quantity:item.qty})});
+    var data={
+        items:items,
+        paidAmount:paid,
+        discountAmount:parseFloat(document.getElementById('discountInput').value)||0,
+        paymentMethod:parseInt(document.getElementById('paymentMethod').value)
+    };
+    if(memberId){data.memberId=memberId}
+    ajax_post('/api/sales/submit',data,function(resp){
+        if(resp.code===200){
+            var pointsMsg='';
+            if(memberId&&currentMember){
+                var newPoints=Math.floor(paid);
+                pointsMsg=' | 会员 '+currentMember.nickname+' 积分 +'+newPoints;
+            }
+            showMsg('收款成功! 订单号:'+resp.data.orderNo+pointsMsg);
+            cart=[];
+            currentMember=null;
+            renderCart();
+            searchProduct();
+        }else{showMsg(resp.msg,true)}
+    });
+}
+
+function toggleRegisterMode(){
+    var regSec=document.getElementById('registerSection');
+    var lookupSec=document.getElementById('lookupSection');
+    var resultSec=document.getElementById('memberResult');
+    var btn=document.getElementById('toggleRegisterBtn');
+    if(regSec.style.display==='none'){
+        regSec.style.display='';
+        lookupSec.style.display='none';
+        resultSec.className='modal-result';
+        btn.textContent='🔍 返回查询会员';
+        document.getElementById('registerAccountInput').focus();
+    }else{
+        regSec.style.display='none';
+        lookupSec.style.display='';
+        btn.textContent='📝 注册新会员';
+        document.getElementById('registerAccountInput').value='';
+        document.getElementById('registerError').className='modal-error';
+    }
+}
+
+function registerMember(){
+    var accountNo=document.getElementById('registerAccountInput').value.trim();
+    if(!accountNo){document.getElementById('registerError').className='modal-error show';document.getElementById('registerError').textContent='请输入11位会员账号';return}
+    document.getElementById('registerError').className='modal-error';
+    ajax_post('/api/member/register',{accountNo:accountNo},function(resp){
+        if(resp.code===200){
+            currentMember=resp.data;
+            document.getElementById('registerSection').style.display='none';
+            document.getElementById('toggleRegisterBtn').textContent='📝 注册新会员';
+            document.getElementById('mrNickname').textContent=resp.data.nickname;
+            document.getElementById('mrAccountNo').textContent=resp.data.accountNo;
+            document.getElementById('mrPoints').textContent='0 积分';
+            var paid=parseFloat(document.getElementById('paidInput').value)||0;
+            var newPoints=Math.floor(paid);
+            document.getElementById('mrPointsTip').textContent='注册成功！本次消费可获得 +'+newPoints+' 积分';
+            document.getElementById('memberResult').className='modal-result show';
+            document.getElementById('confirmMemberBtn').disabled=false;
+        }else{
+            document.getElementById('registerError').className='modal-error show';
+            document.getElementById('registerError').textContent=resp.msg||'注册失败';
+        }
+    });
+}
+
 init();
 </script>
 </body>

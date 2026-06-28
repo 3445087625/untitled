@@ -7,6 +7,7 @@
         <id column="order_id" property="orderId"/>
         <result column="order_no" property="orderNo"/>
         <result column="user_id" property="userId"/>
+        <result column="member_id" property="memberId"/>
         <result column="total_amount" property="totalAmount"/>
         <result column="discount_amount" property="discountAmount"/>
         <result column="paid_amount" property="paidAmount"/>
@@ -16,14 +17,15 @@
         <result column="remark" property="remark"/>
         <result column="create_time" property="createTime"/>
         <result column="real_name" property="realName"/>
+        <result column="member_account_no" property="memberAccountNo"/>
         <result column="detail_count" property="detailCount"/>
     </resultMap>
 
     <!-- 创建订单 -->
     <insert id="insert" useGeneratedKeys="true" keyProperty="orderId" parameterType="com.supermarket.entity.SalesOrder">
-        INSERT INTO sales_order(order_no, user_id, total_amount, discount_amount,
+        INSERT INTO sales_order(order_no, user_id, member_id, total_amount, discount_amount,
                                paid_amount, change_amount, payment_method, remark)
-        VALUES(#{orderNo}, #{userId}, #{totalAmount}, #{discountAmount},
+        VALUES(#{orderNo}, #{userId}, #{memberId}, #{totalAmount}, #{discountAmount},
               #{paidAmount}, #{changeAmount}, #{paymentMethod}, #{remark})
     </insert>
 
@@ -34,16 +36,17 @@
       - 动态 SQL：<if> 标签实现按订单号模糊搜索
     -->
     <select id="selectPage" resultMap="BaseResultMap">
-        SELECT o.*, u.real_name,
+        SELECT o.*, u.real_name, m.account_no AS member_account_no,
                (SELECT COUNT(*) FROM sales_detail WHERE order_id = o.order_id) AS detail_count
         FROM sales_order o
         LEFT JOIN sys_user u ON o.user_id = u.user_id
+        LEFT JOIN member m ON o.member_id = m.member_id
         <where>
             <if test="keyword != null and keyword != ''">
                 AND o.order_no LIKE CONCAT('%', #{keyword}, '%')
             </if>
         </where>
-        ORDER BY o.order_id DESC
+        ORDER BY o.create_time DESC
         LIMIT #{offset}, #{limit}
     </select>
 
@@ -71,9 +74,10 @@
     </select>
 
     <select id="selectById" resultMap="BaseResultMap">
-        SELECT o.*, u.real_name
+        SELECT o.*, u.real_name, m.account_no AS member_account_no
         FROM sales_order o
         LEFT JOIN sys_user u ON o.user_id = u.user_id
+        LEFT JOIN member m ON o.member_id = m.member_id
         WHERE o.order_id = #{orderId}
     </select>
 

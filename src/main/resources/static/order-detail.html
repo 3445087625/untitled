@@ -103,6 +103,7 @@ function renderDetail() {
         html += '<div class="info-item"><span class="info-label">下单时间</span><span class="info-value">' + fmtTime(o.createTime) + '</span></div>';
         html += '<div class="info-item"><span class="info-label">收银员</span><span class="info-value">' + (o.realName || '--') + '</span></div>';
         html += '<div class="info-item"><span class="info-label">支付方式</span><span class="info-value"><span class="pay-badge ' + payBadge + '">' + (paymentNames[o.paymentMethod] || '--') + '</span></span></div>';
+        html += '<div class="info-item"><span class="info-label">会员账号</span><span class="info-value">' + (o.memberAccountNo || '非会员') + '</span></div>';
         if (o.remark) {
             html += '<div class="info-item"><span class="info-label">备注</span><span class="info-value">' + o.remark + '</span></div>';
         }

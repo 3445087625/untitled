@@ -3,6 +3,7 @@ package com.supermarket.service.impl;
 import com.supermarket.entity.Product;
 import com.supermarket.entity.SalesDetail;
 import com.supermarket.entity.SalesOrder;
+import com.supermarket.mapper.MemberMapper;
 import com.supermarket.mapper.ProductMapper;
 import com.supermarket.mapper.SalesDetailMapper;
 import com.supermarket.mapper.SalesOrderMapper;
@@ -35,6 +36,8 @@ public class SalesServiceImpl implements SalesService {
     private SalesDetailMapper salesDetailMapper;
     @Autowired
     private ProductMapper productMapper;
+    @Autowired
+    private MemberMapper memberMapper;
 
     /**
      * 提交销售订单（事务方法）
@@ -109,6 +112,14 @@ public class SalesServiceImpl implements SalesService {
         // 6. 扣减库存
         for (SalesDetail detail : details) {
             productMapper.updateStock(detail.getProductId(), -detail.getQuantity());
+        }
+
+        // 7. 会员积分（消费1元=1积分，取整）
+        if (order.getMemberId() != null && order.getPaidAmount() != null) {
+            int points = order.getPaidAmount().intValue();
+            if (points > 0) {
+                memberMapper.addPoints(order.getMemberId(), points);
+            }
         }
 
         result.put("success", true);
